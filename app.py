@@ -1,9 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask import render_template
-from flask import request
-from flask import redirect
-from flask import url_for
+from flask import render_template, request, redirect, url_for
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

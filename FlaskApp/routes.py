@@ -3,8 +3,8 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request
 from FlaskApp import app, db, bcrypt
-from FlaskApp.forms import RegistrationForm, LoginForm, UpdateAccountForm
-from FlaskApp.models import User
+from FlaskApp.forms import RegistrationForm, LoginForm, UpdateAccountForm, TravelForm
+from FlaskApp.models import User, Travel
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -95,3 +95,18 @@ def account():
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',image_file=image_file, form=form)
+
+
+@app.route("/post/new", methods=['GET', 'POST'])
+@login_required
+def new_travel():
+    form = TravelForm()
+    if form.validate_on_submit():
+        travel = Travel(start_date=form.start_date.data, end_date=form.end_date.data, country=form.country.data,
+                      city=form.city.data, zip=form.zip.data, content=form.content.data, author=current_user)
+        db.session.add(travel)
+        db.session.commit()
+        flash('Your travel post has been created!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_travel_post.html', title='New Travel Post',
+                           form=form, legend='New Travel Post')

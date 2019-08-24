@@ -22,3 +22,19 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
+
+class Travel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    country = db.Column(db.Text, nullable=False)
+    city = db.Column(db.Text, nullable=False)
+    zip = db.Column(db.Text, nullable=False)
+
+    content = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"Post('{self.date_posted}')"

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, RadioField, DateField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, RadioField, DateField, DecimalField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from FlaskApp.models import User
 from flask_wtf.file import FileField, FileAllowed
@@ -62,3 +62,13 @@ class UpdateAccountForm(FlaskForm):
             user = User.query.filter_by(email=email.data).first()
             if user:
                 raise ValidationError('That email is taken. Please choose a different one.')
+
+
+class TravelForm(FlaskForm):
+    start_date = DateField('Start Date', format='%d/%m/%Y')
+    end_date = DateField('End Date', format='%d/%m/%Y')
+    country = StringField('Country', validators=[DataRequired()])
+    city = StringField('City', validators=[DataRequired()])
+    zip = DecimalField('Zip', validators=[DataRequired()])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Post')

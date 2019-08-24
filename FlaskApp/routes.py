@@ -103,7 +103,7 @@ def new_travel():
     form = TravelForm()
     if form.validate_on_submit():
         travel = Travel(start_date=form.start_date.data, end_date=form.end_date.data, country=form.country.data,
-                      city=form.city.data, zip=form.zip.data, content=form.content.data, author=current_user)
+                      city=form.city.data, zip=form.zip.data, content=form.content.data, user_id=current_user)
         db.session.add(travel)
         db.session.commit()
         flash('Your travel post has been created!', 'success')

@@ -37,3 +37,4 @@ class Travel(db.Model):
 
     def __repr__(self):
         return f"Travel('{self.date_posted}')"
+

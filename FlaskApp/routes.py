@@ -1,7 +1,7 @@
 import os
 import secrets
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from FlaskApp import app, db, bcrypt
 from FlaskApp.forms import RegistrationForm, LoginForm, UpdateAccountForm, TravelForm
 from FlaskApp.models import User, Travel
@@ -97,6 +97,12 @@ def account():
     return render_template('account.html', title='Account', image_file=image_file, form=form)
 
 
+@app.route("/post/<int:travel_id>")
+def travel(travel_id):
+    post = Travel.query.get_or_404(travel_id)
+    return render_template('travel_post.html', post=post)
+
+
 @app.route("/post/new", methods=['GET', 'POST'])
 @login_required
 def new_travel():
@@ -110,3 +116,31 @@ def new_travel():
         return redirect(url_for('home'))
     return render_template('create_travel_post.html', title='New Travel Post',
                            form=form, legend='New Travel Post')
+
+
+@app.route("/post/<int:travel_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_travel(travel_id):
+    post = Travel.query.get_or_404(travel_id)
+    if post.traveler != current_user:
+        abort(403)
+    form = TravelForm()
+    if form.validate_on_submit():
+        post.start_date = form.start_date.data
+        post.end_date = form.end_date.data
+        post.country = form.country.data
+        post.city = form.city.data
+        post.zip = form.zip.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your Travel post has been updated!', 'success')
+        return redirect(url_for('travel', travel_id=post.id))
+    elif request.method == 'GET':
+        form.start_date.data = post.start_date
+        form.end_date.data = post.end_date
+        form.country.data = post.country
+        form.city.data = post.city
+        form.zip.data = post.zip
+        form.content.data = post.content
+    return render_template('create_travel_post.html', title='Update Post',
+                           form=form, legend='Update Post')

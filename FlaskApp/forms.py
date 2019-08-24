@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, RadioField, DateField, DecimalField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, RadioField, DateField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from FlaskApp.models import User
 from flask_wtf.file import FileField, FileAllowed
@@ -69,6 +69,6 @@ class TravelForm(FlaskForm):
     end_date = DateField('End Date', format='%d/%m/%Y')
     country = StringField('Country', validators=[DataRequired()])
     city = StringField('City', validators=[DataRequired()])
-    zip = DecimalField('Zip', validators=[DataRequired()])
+    zip = IntegerField('Zip', validators=[DataRequired()])
     content = TextAreaField('Content', validators=[DataRequired()])
     submit = SubmitField('Post')

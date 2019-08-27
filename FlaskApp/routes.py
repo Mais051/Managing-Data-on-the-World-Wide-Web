@@ -103,13 +103,6 @@ def travel(travel_id):
     return render_template('travel_post.html', post=post)
 
 
-#@app.route("/account/<int:user_id>", methods=['GET', 'POST'])
-
-#def travel(travel_id):
-  #  post = Travel.query.get_or_404(travel_id)
- #   return render_template('travel_post.html', post=post)
-
-
 
 
 
@@ -155,3 +148,12 @@ def update_travel(travel_id):
         form.content.data = post.content
     return render_template('create_travel_post.html', title='Update Post',
                            form=form, legend='Update Post')
+
+
+@app.route("/posts")
+def home_posts():
+    page = request.args.get('page', 1, type=int)
+    posts = Travel.query.all()\
+        .order_by(Travel.date_posted.desc())\
+        .paginate(page=page, per_page=5)
+    return render_template('home_posts.html', posts=posts)

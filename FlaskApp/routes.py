@@ -117,10 +117,6 @@ def travel(travel_id):
     return render_template('travel_post.html', post=post)
 
 
-
-
-
-
 @app.route("/post/new", methods=['GET', 'POST'])
 @login_required
 def new_travel():
@@ -162,3 +158,27 @@ def update_travel(travel_id):
         form.content.data = post.content
     return render_template('create_travel_post.html', title='Update Post',
                            form=form, legend='Update Post')
+
+
+@app.route("/account/<int:travel_id>/delete_travel", methods=['POST'])
+@login_required
+def delete_post_user(travel_id):
+    post = Travel.query.get_or_404(travel_id)
+    if post.traveler != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('user_account', post.traveler.id))
+
+
+@app.route("/post/<int:travel_id>/delete", methods=['POST'])
+@login_required
+def delete_post(travel_id):
+    post = Travel.query.get_or_404(travel_id)
+    if post.traveler != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('home'))

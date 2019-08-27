@@ -11,7 +11,7 @@
           <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.traveler.image_file) }}">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="{{ url_for('home', username=post.traveler.username) }}">{{ post.traveler.username }}</a>
+              <a class="mr-2" href="{{ url_for('user_account', user_id=post.traveler.id) }}">{{ post.traveler.username }}</a>
               <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
             </div>
             <h2><a class="article-title" href="{{ url_for('travel', travel_id=post.id) }}">Post</a></h2>

@@ -103,6 +103,17 @@ def travel(travel_id):
     return render_template('travel_post.html', post=post)
 
 
+#@app.route("/account/<int:user_id>", methods=['GET', 'POST'])
+
+#def travel(travel_id):
+  #  post = Travel.query.get_or_404(travel_id)
+ #   return render_template('travel_post.html', post=post)
+
+
+
+
+
+
 @app.route("/post/new", methods=['GET', 'POST'])
 @login_required
 def new_travel():

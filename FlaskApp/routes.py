@@ -11,7 +11,11 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html')
+    page = request.args.get('page', 1, type=int)
+    posts = Travel.query\
+        .order_by(Travel.date_posted.desc())\
+        .paginate(page=page, per_page=5)
+    return render_template('home.html', posts=posts)
 
 
 @app.route("/about")
@@ -101,6 +105,10 @@ def account():
 def travel(travel_id):
     post = Travel.query.get_or_404(travel_id)
     return render_template('travel_post.html', post=post)
+
+
+
+
 
 
 @app.route("/post/new", methods=['GET', 'POST'])

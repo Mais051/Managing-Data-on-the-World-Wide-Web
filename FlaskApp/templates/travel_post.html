@@ -5,7 +5,7 @@
     <div class="media-body">
       <div class="article-metadata">
         <a class="mr-2" href="{{ url_for('user_account', user_id=post.traveler.id) }} ">{{ post.traveler.username }}</a>
-        <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+        <small class="text-muted">{{ post.date_posted.strftime('%d-%m-%Y') }}</small>
         {% if post.traveler == current_user %}
           <div>
             <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_travel', travel_id=post.id) }}">Update</a>
@@ -13,11 +13,11 @@
           </div>
         {% endif %}
       </div>
-      <p class="article-content">{{ post.start_date }}</p>
-      <p class="article-content">{{ post.end_date }}</p>
-      <p class="article-content">{{ post.country }}</p>
-      <p class="article-content">{{ post.city }}</p>
-      <p class="article-content">{{ post.zip }}</p>
+      <p class="article-content">Start Date: {{ post.start_date.strftime('%d-%m-%Y') }}</p>
+      <p class="article-content">End Date: {{ post.end_date.strftime('%d-%m-%Y') }}</p>
+      <p class="article-content">Country: {{ post.country }}</p>
+      <p class="article-content">City: {{ post.city }}</p>
+      <p class="article-content">Zip: {{ post.zip }}</p>
       <p class="article-content">{{ post.content }}</p>
     </div>
   </article>

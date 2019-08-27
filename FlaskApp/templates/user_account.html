@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block content %}
+
+     <div class="content-section">
+      <div class="media">
+          <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}">
+        <div class="media-body">
+          <h2 class="account-heading">{{ user.username }}</h2>
+          <p class="text-secondary">{{ user.email }}</p>
+        </div>
+      </div>
+
+        {% if user == current_user %}
+          <div>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('account_update') }}">Update Account</a>
+          </div>
+        {% endif %}
+
+       <h1 class="mb-3">Posts by {{ user.username }} ({{ posts.total }})</h1>
+      {% for post in posts.items %}
+          <article class="media content-section">
+              <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.traveler.image_file) }}">
+              <div class="media-body">
+                  <div class="article-metadata">
+                      <a class="mr-2">{{ post.traveler.username }}</a>
+                      <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+                      {% if post.traveler == current_user %}
+                          <div>
+                              <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_travel', travel_id=post.id) }}">Update</a>
+                              <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                          </div>
+                      {% endif %}
+                  </div>
+                  <p class="article-content">{{ post.start_date }}</p>
+                  <p class="article-content">{{ post.end_date }}</p>
+                  <p class="article-content">{{ post.country }}</p>
+                  <p class="article-content">{{ post.city }}</p>
+                  <p class="article-content">{{ post.zip }}</p>
+                  <p class="article-content">{{ post.content }}</p>
+              </div>
+          </article>
+      {% endfor %}
+
+     {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if page_num %}
+        {% if posts.page == page_num %}
+          <a class="btn btn-info mb-4" href="{{ url_for('user_account', user_id=user.id, page=page_num) }}">{{ page_num }}</a>
+        {% else %}
+          <a class="btn btn-outline-info mb-4" href="{{ url_for('user_account', user_id=user.id, page=page_num) }}">{{ page_num }}</a>
+        {% endif %}
+      {% else %}
+        ...
+      {% endif %}
+    {% endfor %}
+
+    </div>
+
+{% endblock content %}

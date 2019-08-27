@@ -69,9 +69,9 @@ def save_picture(form_picture):
     return picture_fn
 
 
-@app.route("/account", methods=['GET', 'POST'])
+@app.route("/account/update", methods=['GET', 'POST'])
 @login_required
-def account():
+def account_update():
     form = UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
@@ -85,7 +85,7 @@ def account():
         current_user.email = form.email.data
         db.session.commit()
         flash('Your account has been updated!', 'success')
-        return redirect(url_for('account'))
+        return redirect(url_for('account_update'))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.first_name.data = current_user.first_name
@@ -94,7 +94,17 @@ def account():
         form.birth_date.data = current_user.birth_date
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
-    return render_template('account.html', title='Account', image_file=image_file, form=form)
+    return render_template('account.html', title='Update Account', image_file=image_file, form=form)
+
+
+@app.route("/account/<int:user_id>")
+def user_account(user_id):
+    user = User.query.get_or_404(user_id)
+    page = request.args.get('page', 1, type=int)
+    posts = Travel.query.filter_by(traveler=user) \
+        .order_by(Travel.date_posted.desc()) \
+        .paginate(page=page, per_page=5)
+    return render_template('user_account.html', user=user, posts=posts)
 
 
 @app.route("/post/<int:travel_id>")

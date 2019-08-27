@@ -153,7 +153,7 @@ def update_travel(travel_id):
 @app.route("/posts")
 def home_posts():
     page = request.args.get('page', 1, type=int)
-    posts = Travel.query.all()\
+    posts = Travel.query\
         .order_by(Travel.date_posted.desc())\
         .paginate(page=page, per_page=5)
     return render_template('home_posts.html', posts=posts)

@@ -101,7 +101,19 @@ def travel(travel_id):
     post = Travel.query.get_or_404(travel_id)
     return jsonify({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city, 'zip': post.zip,
-                    'content': post.content, 'user_id': post.traveler.id})
+                    'content': post.content, 'username': post.traveler.username, 'user_id': post.traveler.id})
+
+
+@app.route("/posts", methods=['GET'])
+def get_posts():
+    res = []
+    posts = Travel.query.all()
+    for post in posts:
+        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
+                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
+                    'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
+                    'user_id': post.traveler.id})
+    return jsonify({'posts:': res})
 
 
 @app.route("/posts/new", methods=['POST'])
@@ -112,7 +124,8 @@ def new_travel():
             or not 'city' in data or not 'zip' in data or not 'content' in data:
         abort(400)
     travel = Travel(start_date=data['start_date'], end_date=data['end_date'], country=data['country'],
-                    city=data['city'], zip=data['zip'], content=data['content'], traveler=current_user)
+                    city=data['city'], zip=data['zip'], content=data['content'], traveler=current_user,
+                    title=data['title'])
     db.session.add(travel)
     db.session.commit()
     return 'Created', 201

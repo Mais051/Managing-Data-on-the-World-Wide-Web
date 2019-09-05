@@ -1,11 +1,17 @@
 import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
+import axios from "axios";
+
 
 class Landing extends Component {
   logOut(e) {
-    e.preventDefault()
-    localStorage.removeItem('usertoken')
-    this.props.history.push(`/`)
+      e.preventDefault()
+      localStorage.removeItem('usertoken')
+      this.props.history.push(`/`)
+      axios.get('http://127.0.0.1:5000/logout')
+        .catch(err => {
+          console.log(err)
+        })
   }
 
   render() {

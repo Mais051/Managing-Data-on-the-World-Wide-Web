@@ -176,12 +176,12 @@ def login():
     if current_user.is_authenticated:
         abort(404)
     user_data = request.get_json()
-    if not user_data or not 'password' in user_data or not 'email' in user_data or not 'remember' in user_data:
+    if not user_data or not 'password' in user_data or not 'email' in user_data:
         abort(400)
 
     user = User.query.filter_by(email=user_data['email']).first()
     if user and bcrypt.check_password_hash(user.password, user_data['password']):
-        login_user(user, remember=user['remember'])
+        login_user(user, remember=True)
         access_token = create_access_token(identity={'id': user.id, 'username': user.username,
                                                      'first_name': user.first_name,
                                                      'last_name': user.last_name, 'email': user.email,

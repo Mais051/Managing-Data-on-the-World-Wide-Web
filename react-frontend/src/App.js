@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
-import Navbar from './components/Navbar'
-import Landing from './components/Landing'
-import Login from './components/Login'
-import Register from './components/Register'
-import Profile from './components/Profile'
+import Navbar from './Component/Navbar'
+import Landing from './Component/Landing'
+import Login from './Component/Login'
+import Register from './Component/Register'
+import Profile from './Component/Profile'
 
 
 // import {

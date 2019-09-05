@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
+import DatePicker from "react-datepicker"
 import { register } from './UserOpt'
+import "react-datepicker/dist/react-datepicker.css";
 
 class Register extends Component {
   constructor() {
@@ -9,7 +11,7 @@ class Register extends Component {
       first_name: '',
       last_name: '',
       gender: '',
-      birth_date: '',
+      birth_date: new Date(),
       email: '',
       password: '',
       errors: {}
@@ -19,6 +21,16 @@ class Register extends Component {
     this.onSubmit = this.onSubmit.bind(this)
   }
 
+  // handleChange = date => {
+  //   this.setState({
+  //     birth_date: date
+  //   });
+  // };
+  handleChange = date => {
+    this.setState({
+      birth_date: date
+    });
+  };
   onChange(e) {
     this.setState({ [e.target.name]: e.target.value })
   }
@@ -81,25 +93,18 @@ class Register extends Component {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="name">Gender</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="gender"
-                  placeholder="Enter your gender"
-                  value={this.state.gender}
-                  onChange={this.onChange}
-                />
+                <label htmlFor="name">Gender</label><br></br>
+                <input type="radio" name="gender" value="male"/> Male<br></br>
+                <input type="radio" name="gender" value="female"/> Female<br></br>
+                <input type="radio" name="gender" value="other"/> Other
               </div>
               <div className="form-group">
                 <label htmlFor="name">Birth date</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="birth_date"
-                  placeholder="Enter your birth date"
-                  value={this.state.birth_date}
-                  onChange={this.onChange}
+                <DatePicker
+                 name="birth_date"
+                 selected={this.state.birth_date}
+                 onChange={this.handleChange}
+                 dateFormat="dd/MM/yyyy"
                 />
               </div>
               <div className="form-group">

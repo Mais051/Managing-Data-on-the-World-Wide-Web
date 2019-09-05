@@ -18,7 +18,8 @@ class App extends Component {
     _refreshPosts(){
         axios.get('http://localhost:5000/posts').then((response) => {
             this.setState({
-            posts: response.data
+            posts: response.data.posts
+
           })
         });
     }

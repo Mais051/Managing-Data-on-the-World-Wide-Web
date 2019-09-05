@@ -54,7 +54,7 @@ def get_user_posts(user_id):
         result.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
                        'zip': post.zip, 'content': post.content})
-    return jsonify({'posts:': result})
+    return jsonify({'posts': result})
 
 
 @app.route("/user/new", methods=['POST'])
@@ -113,7 +113,7 @@ def get_posts():
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id})
-    return jsonify({'posts:': res})
+    return jsonify({'posts': res})
 
 
 @app.route("/posts/new", methods=['POST'])

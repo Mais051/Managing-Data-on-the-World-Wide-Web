@@ -5,6 +5,7 @@ from flask import url_for, request, abort, jsonify, make_response
 from FlaskApp import app, db, bcrypt
 from FlaskApp.models import User, Travel
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_jwt_extended import (create_access_token)
 
 
 def save_picture(form_picture):
@@ -93,7 +94,13 @@ def user_update(user_id):
     current_user.birth_date = user_data['birth_date']
     current_user.email = user_data['email']
     db.session.commit()
-    return 'Updated', 201
+
+    access_token = create_access_token(identity={'id': user.id, 'username': user.username,
+                                                 'first_name': user.first_name,
+                                                 'last_name': user.last_name, 'email': user.email,
+                                                 'birth_date': user.birth_date, 'gender': user.gender,
+                                                 'image_file': user.image_file})
+    return access_token
 
 
 @app.route("/posts/<int:travel_id>", methods=['GET'])
@@ -173,12 +180,18 @@ def login():
         abort(400)
 
     user = User.query.filter_by(email=user_data['email']).first()
-
     if user and bcrypt.check_password_hash(user.password, user_data['password']):
         login_user(user, remember=user['remember'])
-        return 'Success', 200
+        access_token = create_access_token(identity={'id': user.id, 'username': user.username,
+                                                     'first_name': user.first_name,
+                                                     'last_name': user.last_name, 'email': user.email,
+                                                     'birth_date': user.birth_date, 'gender': user.gender,
+                                                     'image_file': user.image_file})
+        result = access_token
     else:
-        return 'Failed login', 400
+        result = jsonify({"error": "Invalid username and password"})
+
+    return result
 
 
 @app.route("/logout", methods=['GET'])

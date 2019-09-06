@@ -189,7 +189,7 @@ def login():
                                                      'image_file': user.image_file})
         result = access_token
     else:
-        result = jsonify({"error": "Invalid username and password"})
+        abort(400)
 
     return result
 

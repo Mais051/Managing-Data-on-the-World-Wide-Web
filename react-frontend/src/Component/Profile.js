@@ -38,7 +38,7 @@ class Profile extends Component {
           <table className="table col-md-6 mx-auto">
             <tbody>
               <tr>
-                <td>UserName</td>
+                <td>Username</td>
                 <td>{this.state.username}</td>
               </tr>
               <tr>

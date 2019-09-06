@@ -63,15 +63,22 @@ def register():
     if current_user.is_authenticated:
         abort(400)
     data = request.get_json()
+
     if not data or not 'password' in data or not 'username' in data or not 'first_name' in data \
             or not 'last_name' in data or not 'gender' in data or not 'birth_date' in data or not 'email' in data:
         abort(400)
+    check_user = User.query.filter_by(email=data['email']).first()
+    if check_user:
+        return 'Email Taken'
+    check_user = User.query.filter_by(username=data['username']).first()
+    if check_user:
+        return 'Username Taken'
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     user = User(username=data['username'], first_name=data['first_name'], last_name=data['last_name'],
                 gender=data['gender'], birth_date=data['birth_date'], email=data['email'], password=hashed_password)
     db.session.add(user)
     db.session.commit()
-    return 'Created', 201
+    return 'Created'
 
 
 @app.route("/users/<int:user_id>", methods=['PUT'])

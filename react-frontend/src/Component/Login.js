@@ -40,7 +40,7 @@ class Login extends Component {
     switch (name) {
       case 'email':
         errors.email =
-          validEmailRegex.test(value)
+          validEmailRegex.test(value)  && value.length <= 120
             ? ''
             : 'Email is not valid!';
         break;

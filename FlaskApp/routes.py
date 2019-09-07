@@ -120,7 +120,8 @@ def travel(travel_id):
     post = Travel.query.get_or_404(travel_id)
     return jsonify({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city, 'zip': post.zip,
-                    'content': post.content, 'username': post.traveler.username, 'user_id': post.traveler.id})
+                    'content': post.content, 'username': post.traveler.username, 'user_id': post.traveler.id,
+                    'id': post.id})
 
 
 @app.route("/posts", methods=['GET'])

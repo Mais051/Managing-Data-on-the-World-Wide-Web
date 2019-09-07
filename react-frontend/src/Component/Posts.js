@@ -5,9 +5,6 @@ import moment from "moment";
 import Modal from "reactstrap/es/Modal";
 import ModalBody from "reactstrap/es/ModalBody";
 import ModalHeader from "reactstrap/es/ModalHeader";
-import Label from "reactstrap/es/Label";
-import FormGroup from "reactstrap/es/FormGroup";
-import Input from "reactstrap/es/Input";
 import Button from "reactstrap/es/Button";
 import ModalFooter from "reactstrap/es/ModalFooter";
 import Alert from "reactstrap/es/Alert";
@@ -21,6 +18,7 @@ class Posts extends Component {
         this.state = {
             posts: [],
             newPostModal: false,
+            deletePostModal: false,
             start_date: '',
             end_date: '',
             country: '',
@@ -28,7 +26,8 @@ class Posts extends Component {
             zip: '',
             content: '',
             title: '',
-            invalid: 0
+            invalid: 0,
+            postToDelete: 0
         }
         this.onChange = this.onChange.bind(this)
     }
@@ -51,6 +50,24 @@ class Posts extends Component {
     });
   }
 
+  toggleDeletePostModal(post) {
+    this.setState({
+      deletePostModal: ! this.state.deletePostModal,
+      postToDelete: post.id
+    });
+  }
+  deletePost(){
+         axios.defaults.withCredentials = true;
+    axios.delete('http://127.0.0.1:5000/posts/'+this.state.postToDelete)
+        .then((response) => {
+            this._refreshPosts();
+
+      this.setState({
+      deletePostModal: false
+    });
+    })
+
+  }
    addPost() {
         this.setState({invalid: 0});
         axios.defaults.withCredentials = true;
@@ -83,6 +100,7 @@ class Posts extends Component {
        this.setState({invalid: 1});
     });
   }
+
     _refreshPosts(){
         axios.get('http://localhost:5000/posts').then((response) => {
             this.setState({
@@ -116,21 +134,39 @@ class Posts extends Component {
                         </div>
                         <div className="card-body">
                             <h5 className="card-title">{post.title}</h5>
-                            <p className="card-text">Start Date: {moment(post.start_date).format("LL")}.</p>
-                            <p className="card-text">End Date: {moment(post.end_date).format("LL")}.</p>
-                            <p className="card-text">Country: {post.country}.</p>
-                            <p className="card-text">City: {post.city}.</p>
-                            <p className="card-text">Zip: {post.zip}.</p>
-                            <p className="card-text">{post.content}.</p>
+                            <p className="card-text">Start Date: {moment(post.start_date).format("LL")}</p>
+                            <p className="card-text">End Date: {moment(post.end_date).format("LL")}</p>
+                            <p className="card-text">Country: {post.country}</p>
+                            <p className="card-text">City: {post.city}</p>
+                            <p className="card-text">Zip: {post.zip}</p>
+                            <p className="card-text">{post.content}</p>
                             {this.isPostMine(post) && <a href="#" className="btn btn-secondary">Update</a>}
                             <a> </a>
-                            {this.isPostMine(post) && <a href="#" className="btn btn-danger">Delete</a>}
+                            {this.isPostMine(post) && <Button className="my-3" color="danger" onClick={this.toggleDeletePostModal.bind(this,post)}>Delete</Button>}
                         </div>
                         <div className="card-footer text-muted">
                             Posted on {post.date_posted} </div>
+                        <Modal isOpen={this.state.deletePostModal} toggle={this.toggleDeletePostModal.bind(this)}>
+                            <ModalHeader toggle={this.toggleDeletePostModal.bind(this)}>Delete Post</ModalHeader>
+                            <ModalBody> Are you sure you want to delete this post?
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="primary" onClick={this.deletePost.bind(this)}>Yes</Button>{' '}
+                                <Button color="secondary" onClick={this.toggleDeletePostModal.bind(this)}>Cancel</Button>
+                            </ModalFooter>
+                        </Modal>
                     </div>
+                </div>
 
-                    <Modal isOpen={this.state.newPostModal} toggle={this.toggleNewPostModal.bind(this)}>
+            );
+        });
+        return (
+             <div>
+                  <p className="m-md-4" align="center">
+                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
+                    </p>
+                {posts}
+                <Modal isOpen={this.state.newPostModal} toggle={this.toggleNewPostModal.bind(this)}>
                         <ModalHeader toggle={this.toggleNewPostModal.bind(this)}>Add a new post</ModalHeader>
                         <ModalBody>
                              {this.state.invalid >0 &&  <Alert color="danger">
@@ -212,16 +248,6 @@ class Posts extends Component {
                             <Button color="secondary" onClick={this.toggleNewPostModal.bind(this)}>Cancel</Button>
                         </ModalFooter>
                     </Modal>
-                </div>
-
-            );
-        });
-        return (
-             <div>
-                  <p className="m-md-4" align="center">
-                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
-                    </p>
-                {posts}
             </div>
 
         );

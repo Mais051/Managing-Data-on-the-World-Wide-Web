@@ -18,6 +18,7 @@ export const register = newUser => {
 
 
 export const login = user => {
+    axios.defaults.withCredentials = true;
   return axios
     .post('http://127.0.0.1:5000/login', {
       email: user.email,

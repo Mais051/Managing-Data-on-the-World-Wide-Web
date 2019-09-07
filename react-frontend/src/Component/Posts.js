@@ -53,7 +53,8 @@ class Posts extends Component {
 
    addPost() {
         this.setState({invalid: 0});
-    axios.post('http://127.0.0.1:5000/posts/new', { start_date: this.state.start_date,
+        axios.defaults.withCredentials = true;
+    axios.post('http://127.0.0.1:5000/posts/new', {start_date: this.state.start_date,
             end_date: this.state.end_date,
             country: this.state.country,
             city: this.state.city,
@@ -62,8 +63,7 @@ class Posts extends Component {
             title: this.state.title
         })
         .then((response) => {
-      let  posts_up  = this.state.posts;
-      posts_up.push(response.data);
+            this._refreshPosts();
       this.setState({
          start_date: '',
           end_date: '',
@@ -73,9 +73,7 @@ class Posts extends Component {
           content:'',
           title: ''
         });
-      this.setState({
-      posts: posts_up
-    });
+
       this.setState({
       newPostModal: false
     });
@@ -112,9 +110,6 @@ class Posts extends Component {
         let posts =  this.state.posts.map((post) => {
             return (
                 <div>
-                    <p className="m-md-4" align="center">
-                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
-                    </p>
                     <div className="card text-center">
                         <div className="card-header">
                             Post by: <a href="#">{post.username}</a>
@@ -223,6 +218,9 @@ class Posts extends Component {
         });
         return (
              <div>
+                  <p className="m-md-4" align="center">
+                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
+                    </p>
                 {posts}
             </div>
 

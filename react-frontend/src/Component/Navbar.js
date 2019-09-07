@@ -8,6 +8,7 @@ class Navbar extends Component {
       e.preventDefault()
       localStorage.removeItem('usertoken')
       this.props.history.push(`/`)
+      axios.defaults.withCredentials = true;
       axios.get('http://127.0.0.1:5000/logout')
         .catch(err => {
           console.log(err)

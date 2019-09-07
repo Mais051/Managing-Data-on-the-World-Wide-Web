@@ -8,6 +8,11 @@ from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
 def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
@@ -19,11 +24,6 @@ def save_picture(form_picture):
     i.thumbnail(output_size)
     i.save(picture_path)
     return picture_fn
-
-
-@login_manager.user_loader
-def load_user(id_n):
-    return User.query.get(int(id_n))
 
 
 @app.errorhandler(404)
@@ -131,12 +131,13 @@ def get_posts():
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id})
-    return jsonify({'posts': res})
+                    'user_id': post.traveler.id, 'id': post.id})
+    result = sorted(res, key=lambda d: d['id'], reverse=True)
+    return jsonify({'posts': result})
 
 
 @app.route("/posts/new", methods=['POST'])
-#@login_required
+@login_required
 def new_travel():
     data = request.get_json()
     if not data or not 'start_date' in data or not 'end_date' in data or not 'country' in data \

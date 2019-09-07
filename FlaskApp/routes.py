@@ -2,7 +2,7 @@ import os
 import secrets
 from PIL import Image
 from flask import url_for, request, abort, jsonify, make_response
-from FlaskApp import app, db, bcrypt
+from FlaskApp import app, db, bcrypt, login_manager
 from FlaskApp.models import User, Travel
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
@@ -19,6 +19,11 @@ def save_picture(form_picture):
     i.thumbnail(output_size)
     i.save(picture_path)
     return picture_fn
+
+
+@login_manager.user_loader
+def load_user(id_n):
+    return User.query.get(int(id_n))
 
 
 @app.errorhandler(404)
@@ -131,11 +136,11 @@ def get_posts():
 
 
 @app.route("/posts/new", methods=['POST'])
-@login_required
+#@login_required
 def new_travel():
     data = request.get_json()
     if not data or not 'start_date' in data or not 'end_date' in data or not 'country' in data \
-            or not 'city' in data or not 'zip' in data or not 'content' in data:
+            or not 'city' in data or not 'zip' in data or not 'content' in data or not 'title' in data:
         abort(400)
     travel = Travel(start_date=data['start_date'], end_date=data['end_date'], country=data['country'],
                     city=data['city'], zip=data['zip'], content=data['content'], traveler=current_user,

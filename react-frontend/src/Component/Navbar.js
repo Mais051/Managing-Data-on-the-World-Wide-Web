@@ -3,7 +3,7 @@ import { Link, withRouter } from 'react-router-dom'
 import axios from "axios";
 
 
-class Landing extends Component {
+class Navbar extends Component {
   logOut(e) {
       e.preventDefault()
       localStorage.removeItem('usertoken')
@@ -32,6 +32,11 @@ class Landing extends Component {
 
     const userLink = (
       <ul className="navbar-nav">
+       <li className="nav-item">
+          <Link to="/posts" className="nav-link">
+            Posts
+          </Link>
+        </li>
         <li className="nav-item">
           <Link to="/profile" className="nav-link">
             User
@@ -77,4 +82,4 @@ class Landing extends Component {
   }
 }
 
-export default withRouter(Landing)
+export default withRouter(Navbar)

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import jwt_decode from 'jwt-decode'
+import moment from "moment";
 
 class Profile extends Component {
   constructor() {
@@ -55,7 +56,7 @@ class Profile extends Component {
               </tr>
               <tr>
                 <td>Birth Date</td>
-                <td>{this.state.birth_date}</td>
+                <td>{moment(this.state.birth_date).format("LL")}</td>
               </tr>
               <tr>
                 <td>Email</td>

@@ -6,15 +6,17 @@ import Landing from './Component/Landing'
 import Login from './Component/Login'
 import Register from './Component/Register'
 import Profile from './Component/Profile'
+import Posts from './Component/Posts'
+import {Redirect} from "react-router-dom";
 
 
-// import {
-//   Container, Col, Form,
-//   FormGroup, Label, Input,
-//   Button, Card, CardImg, CardText, CardBody,
-//   CardTitle, CardSubtitle
-// } from 'reactstrap';
-// import axios from 'axios';
+
+function isLoggedIn() {
+  if (localStorage.usertoken) {
+    return true
+  }
+  return false
+}
 
 class App extends Component {
   render() {
@@ -24,53 +26,29 @@ class App extends Component {
           <Navbar />
           <Route exact path="/" component={Landing} />
           <div className="container">
-            <Route exact path="/register" component={Register} />
-            <Route exact path="/login" component={Login} />
-            <Route exact path="/profile" component={Profile} />
+            <Route exact path="/register" render={(props) => (
+                !isLoggedIn() ? (
+                    <Register {...props} />) : (<Redirect to="/profile"/> )
+            )}/>
+            <Route exact path="/login" render={(props) => (
+                !isLoggedIn() ? (
+                    <Login {...props} />) : (<Redirect to="/profile"/> )
+            )}/>
+            <Route exact path="/profile" render={(props) => (
+                isLoggedIn() ? (
+                    <Profile {...props} />) : (<Redirect to="/login"/> )
+            )}/>
+             <Route exact path="/posts" render={(props) => (
+                isLoggedIn() ? (
+                    <Posts {...props} />) : (<Redirect to="/login"/> )
+            )}/>
+
           </div>
         </div>
       </Router>
     )
   }
 }
-//
-//     state = {
-//         posts: []
-//     }
-//     componentWillMount() {
-//         this._refreshPosts();
-//     }
-//
-//     _refreshPosts(){
-//         axios.get('http://localhost:5000/posts').then((response) => {
-//             this.setState({
-//             posts: response.data.posts
-//
-//           })
-//         });
-//     }
-//
-//     render() {
-//         let posts =  this.state.posts.map((post) => {
-//             return (
-//                 <Card>
-//                         <CardImg top width="100%" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=318%C3%97180&w=318&h=180" alt="Card image cap" />
-//                         <CardBody>
-//                           <CardTitle>{post.title}</CardTitle>
-//                           <CardSubtitle>{post.username}</CardSubtitle>
-//                           <CardText>{post.content}</CardText>
-//                           <Button>Button</Button>
-//                         </CardBody>
-//                 </Card>
-//             )
-//         });
-//         return (
-//             <div>
-//                 {posts}
-//             </div>
-//
-//         );
-//     }
-// }
+
 
 export default App;

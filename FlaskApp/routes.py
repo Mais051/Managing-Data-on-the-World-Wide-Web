@@ -170,6 +170,7 @@ def update_travel(travel_id):
     post.city = data['city']
     post.zip = data['zip']
     post.content = data['content']
+    post.title = data['title']
     db.session.commit()
     return 'Updated', 201
 

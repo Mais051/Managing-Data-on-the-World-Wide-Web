@@ -19,6 +19,7 @@ class Posts extends Component {
             posts: [],
             newPostModal: false,
             deletePostModal: false,
+            updatePostModal: false,
             start_date: '',
             end_date: '',
             country: '',
@@ -27,7 +28,8 @@ class Posts extends Component {
             content: '',
             title: '',
             invalid: 0,
-            postToDelete: 0
+            postToDelete: 0,
+            postToUpdate: 0
         }
         this.onChange = this.onChange.bind(this)
     }
@@ -48,6 +50,17 @@ class Posts extends Component {
     this.setState({
       newPostModal: ! this.state.newPostModal
     });
+     this.setState({
+         start_date: '',
+          end_date: '',
+          country:'',
+          zip:'',
+          city:'',
+          content:'',
+          title: '',
+          postToUpdate: 0,
+          postToDelete: 0,
+        });
   }
 
   toggleDeletePostModal(post) {
@@ -56,6 +69,21 @@ class Posts extends Component {
       postToDelete: post.id
     });
   }
+
+  toggleUpdatePostModal(post) {
+    this.setState({
+      updatePostModal: ! this.state.updatePostModal,
+      postToUpdate: post.id,
+       country: post.country,
+       zip: post.zip,
+       city: post.city,
+       content: post.content,
+        //start_date: post.start_date,
+        //end_date: post.end_date,
+       title: post.title
+    });
+  }
+
   deletePost(){
          axios.defaults.withCredentials = true;
     axios.delete('http://127.0.0.1:5000/posts/'+this.state.postToDelete)
@@ -68,6 +96,36 @@ class Posts extends Component {
     })
 
   }
+     updatePost() {
+        this.setState({invalid: 0});
+        axios.defaults.withCredentials = true;
+    axios.put('http://127.0.0.1:5000/posts/'+this.state.postToUpdate, {start_date: this.state.start_date,
+            end_date: this.state.end_date,
+            country: this.state.country,
+            city: this.state.city,
+            zip: this.state.zip,
+            content: this.state.content,
+            title: this.state.title
+        })
+        .then((response) => {
+            this._refreshPosts();
+            this.setState({
+                start_date: '',
+                end_date: '',
+                country: '',
+                zip: '',
+                city: '',
+                content: '',
+                title: '',
+                postToUpdate: 0,
+                postToDelete: 0,
+            });
+
+            this.setState({
+                updatePostModal: false
+            });
+        });
+    }
    addPost() {
         this.setState({invalid: 0});
         axios.defaults.withCredentials = true;
@@ -88,7 +146,9 @@ class Posts extends Component {
           zip:'',
           city:'',
           content:'',
-          title: ''
+          title: '',
+          postToUpdate: 0,
+          postToDelete: 0,
         });
 
       this.setState({
@@ -140,7 +200,7 @@ class Posts extends Component {
                             <p className="card-text">City: {post.city}</p>
                             <p className="card-text">Zip: {post.zip}</p>
                             <p className="card-text">{post.content}</p>
-                            {this.isPostMine(post) && <a href="#" className="btn btn-secondary">Update</a>}
+                            {this.isPostMine(post) && <Button className="my-3" color="secondary" onClick={this.toggleUpdatePostModal.bind(this,post)}>Update</Button>}
                             <a> </a>
                             {this.isPostMine(post) && <Button className="my-3" color="danger" onClick={this.toggleDeletePostModal.bind(this,post)}>Delete</Button>}
                         </div>
@@ -155,6 +215,90 @@ class Posts extends Component {
                                 <Button color="secondary" onClick={this.toggleDeletePostModal.bind(this)}>Cancel</Button>
                             </ModalFooter>
                         </Modal>
+
+                         <Modal isOpen={this.state.updatePostModal} toggle={this.toggleUpdatePostModal.bind(this)}>
+                        <ModalHeader toggle={this.toggleUpdatePostModal.bind(this)}>Update your post</ModalHeader>
+                        <ModalBody>
+                             {this.state.invalid >0 &&  <Alert color="danger">
+                              Your post is invalid. Please try again!
+                            </Alert> }
+                             <form noValidate onSubmit={this.onSubmit}>
+                                 <label htmlFor="name">Post title</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      name="title"
+                                      placeholder="Enter your title"
+                                      value={this.state.title}
+                                      onChange={this.onChange}
+                                      noValidate
+                                    />
+                                  <div className="form-group">
+                                      <label htmlFor="name">Start date</label><br></br>
+                                    <DatePicker
+                                     name="start_date"
+                                     selected={this.state.start_date}
+                                     onChange={this.handleChangeStart}
+                                     dateFormat="dd/MM/yyyy"
+                                    />
+                                  </div>
+                                   <div className="form-group">
+                                      <label htmlFor="name">End date</label><br></br>
+                                    <DatePicker
+                                     name="end_date"
+                                     selected={this.state.end_date}
+                                     onChange={this.handleChangeEnd}
+                                     dateFormat="dd/MM/yyyy"
+                                    />
+                                  </div>
+                                 <label htmlFor="name">Country</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      name="country"
+                                      placeholder="Enter country name"
+                                      value={this.state.country}
+                                      onChange={this.onChange}
+                                      noValidate
+                                    />
+                                    <label htmlFor="name">City</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      name="city"
+                                      placeholder="Enter city name"
+                                      value={this.state.city}
+                                      onChange={this.onChange}
+                                      noValidate
+                                    />
+                                      <label htmlFor="name">Zip</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      name="zip"
+                                      placeholder="Enter zip code"
+                                      value={this.state.zip}
+                                      onChange={this.onChange}
+                                      noValidate
+                                    />
+                                    <label htmlFor="name">Content</label>
+                                    <textarea
+                                      type="text"
+                                      className="form-control"
+                                      name="content"
+                                      placeholder="Enter your post content"
+                                      value={this.state.content}
+                                      onChange={this.onChange}
+                                      noValidate
+                                    textarea/>
+                                </form>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="primary" onClick={this.updatePost.bind(this)}>Update Post</Button>{' '}
+                            <Button color="secondary" onClick={this.toggleUpdatePostModal.bind(this)}>Cancel</Button>
+                        </ModalFooter>
+                    </Modal>
+
                     </div>
                 </div>
 

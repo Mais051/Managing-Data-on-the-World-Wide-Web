@@ -51,16 +51,25 @@ def get_user(user_id):
                     'image_file': image_file})
 
 
-@app.route("/users/<int:user_id>/posts", methods=['GET'])
-def get_user_posts(user_id):
+@app.route("/users", methods=['GET'])
+def get_user_posts():
+    user_id = request.args.get('id', None)  # use default value repalce 'None'
+    page = request.args.get('page', None)
+    if not user_id or not page:
+        abort(400)
+
     user = User.query.get_or_404(user_id)
-    posts = Travel.query.filter_by(traveler=user)
-    result = []
-    for post in posts:
-        result.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
+    posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
+    res = []
+    for post in posts.items:
+        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                       'zip': post.zip, 'content': post.content})
-    return jsonify({'posts': result})
+                       'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
+                    'user_id': post.traveler.id, 'id': post.id})
+    all_posts = Travel.query.filter_by(traveler=user)
+
+    result = sorted(res, key=lambda d: d['id'], reverse=True)
+    return jsonify({'posts': result, 'length': len(all_posts)})
 
 
 @app.route("/user/new", methods=['POST'])

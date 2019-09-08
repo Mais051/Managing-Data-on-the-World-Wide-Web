@@ -12,7 +12,7 @@ import DatePicker from "react-datepicker";
 import ReactPaginate from 'react-paginate';
 
 
-class Posts extends Component {
+export class Posts extends Component {
     constructor() {
         super()
         this.state = {
@@ -184,14 +184,26 @@ class Posts extends Component {
   }
 
     _refreshPosts(page) {
-        axios.get('http://127.0.0.1:5000/posts/page/' + page).then((response) => {
-            this.setState({
-                posts: response.data.posts,
-                amount_of_posts: response.data.length
-            })
-        }) .catch(err => {
-      console.log(err)});
-
+        if (!this.props.id) {
+            axios.get('http://127.0.0.1:5000/posts/page/' + page).then((response) => {
+                this.setState({
+                    posts: response.data.posts,
+                    amount_of_posts: response.data.length
+                })
+            }).catch(err => {
+                console.log(err)
+            });
+        }
+        else{
+            axios.get('http://127.0.0.1:5000/users?id='+this.props.id+"&page=" + page).then((response) => {
+                this.setState({
+                    posts: response.data.posts,
+                    amount_of_posts: response.data.length
+                })
+            }).catch(err => {
+                console.log(err)
+            });
+        }
     }
 
     handlePageClick = data => {

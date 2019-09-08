@@ -43,8 +43,7 @@ class App extends Component {
                     <Posts {...props} />) : (<Redirect to="/login"/> )
             )}/>
 
-             <Posts id ="1"/>
-            )}/>
+             {/*<Posts id ="1"/>*/}
           </div>
         </div>
       </Router>

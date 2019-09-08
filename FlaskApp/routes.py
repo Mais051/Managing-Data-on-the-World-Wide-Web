@@ -53,20 +53,20 @@ def get_user(user_id):
 
 @app.route("/users", methods=['GET'])
 def get_user_posts():
-    user_id = request.args.get('id', None)  # use default value repalce 'None'
-    page = request.args.get('page', None)
+    user_id = int(request.args.get('id', 1))  # use default value repalce 'None'
+    page = int(request.args.get('page', 1))
     if not user_id or not page:
         abort(400)
 
     user = User.query.get_or_404(user_id)
-    posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
+    posts = Travel.query.filter_by(traveler=user).order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
     res = []
     for post in posts.items:
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
                        'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id})
-    all_posts = Travel.query.filter_by(traveler=user)
+    all_posts = Travel.query.filter_by(traveler=user).all()
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts)})

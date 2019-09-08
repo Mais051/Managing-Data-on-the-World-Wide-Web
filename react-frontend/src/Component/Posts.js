@@ -9,7 +9,7 @@ import Button from "reactstrap/es/Button";
 import ModalFooter from "reactstrap/es/ModalFooter";
 import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
-
+import ReactPaginate from 'react-paginate';
 
 
 class Posts extends Component {
@@ -29,10 +29,13 @@ class Posts extends Component {
             title: '',
             invalid: 0,
             postToDelete: 0,
-            postToUpdate: 0
+            postToUpdate: 0,
+            pageCount: 0,
+            current_page: 1
         }
         this.onChange = this.onChange.bind(this)
     }
+
 
     componentWillMount() {
         this._refreshPosts();
@@ -70,23 +73,36 @@ class Posts extends Component {
     });
   }
 
-  toggleUpdatePostModalCancel(){
-        this.setState({
-                          updatePostModal: ! this.state.updatePostModal,
-    });
-}
   toggleUpdatePostModal(post) {
-    this.setState({
-      updatePostModal: ! this.state.updatePostModal,
-      postToUpdate: post.id,
-       country: post.country,
-       zip: post.zip,
-       city: post.city,
-       content: post.content,
-       //start_date: new Date(post.start_date),
-       // end_date: new Date(post.end_date),
-       title: post.title
-    });
+        const update = this.state.updatePostModal;
+        this.setState({
+                updatePostModal: !this.state.updatePostModal});
+
+        if (!update) {
+            this.setState({
+                postToUpdate: post.id,
+                country: post.country,
+                zip: post.zip,
+                city: post.city,
+                content: post.content,
+                start_date: new Date(post.start_date),
+                end_date: new Date(post.end_date),
+                title: post.title
+            });
+        }
+        else{
+             this.setState({
+                          start_date: '',
+                          end_date: '',
+                          country:'',
+                          zip:'',
+                          city:'',
+                          content:'',
+                          title: '',
+                          postToUpdate: 0,
+                          postToDelete: 0,
+             });
+        }
   }
 
   deletePost(){
@@ -166,15 +182,24 @@ class Posts extends Component {
     });
   }
 
-    _refreshPosts(){
-        axios.get('http://localhost:5000/posts').then((response) => {
+    _refreshPosts() {
+        axios.get('http://127.0.0.1:5000/posts/page/' + this.state.current_page).then((response) => {
             this.setState({
-            posts: response.data.posts
+                posts: response.data.posts
+            })
+        }) .catch(err => {
+      console.log(err)});
+        ;
 
-          })
-        });
     }
 
+    handlePageClick = data => {
+        const new_page = (data.selected+1);
+        this.setState({ current_page: new_page }
+
+        );
+        this._refreshPosts();
+  };
     isPostMine(post){
         const token = localStorage.usertoken
         const decoded = jwt_decode(token)
@@ -211,7 +236,33 @@ class Posts extends Component {
                         </div>
                         <div className="card-footer text-muted">
                             Posted on {post.date_posted} </div>
-                        <Modal isOpen={this.state.deletePostModal} toggle={this.toggleDeletePostModal.bind(this)}>
+
+                    </div>
+                </div>
+
+            );
+        });
+        return (
+             <div>
+                  <p className="m-md-4" align="center">
+                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
+                    </p>
+                {posts}
+
+                 <ReactPaginate
+                      previousLabel={'previous'}
+                      nextLabel={'next'}
+                      breakLabel={'...'}
+                      breakClassName={'break-me'}
+                      pageCount={20}
+                      marginPagesDisplayed={2}
+                      pageRangeDisplayed={5}
+                      onPageChange={this.handlePageClick}
+                      containerClassName={'pagination'}
+                      subContainerClassName={'pages pagination'}
+                      activeClassName={'active'}
+                    />
+                 <Modal isOpen={this.state.deletePostModal} toggle={this.toggleDeletePostModal.bind(this)}>
                             <ModalHeader toggle={this.toggleDeletePostModal.bind(this)}>Delete Post</ModalHeader>
                             <ModalBody> Are you sure you want to delete this post?
                             </ModalBody>
@@ -300,21 +351,10 @@ class Posts extends Component {
                         </ModalBody>
                         <ModalFooter>
                             <Button color="primary" onClick={this.updatePost.bind(this)}>Update Post</Button>{' '}
-                            <Button color="secondary" onClick={this.toggleUpdatePostModalCancel.bind(this)}>Cancel</Button>
+                            <Button color="secondary" onClick={this.toggleUpdatePostModal.bind(this)}>Cancel</Button>
                         </ModalFooter>
                     </Modal>
 
-                    </div>
-                </div>
-
-            );
-        });
-        return (
-             <div>
-                  <p className="m-md-4" align="center">
-                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
-                    </p>
-                {posts}
                 <Modal isOpen={this.state.newPostModal} toggle={this.toggleNewPostModal.bind(this)}>
                         <ModalHeader toggle={this.toggleNewPostModal.bind(this)}>Add a new post</ModalHeader>
                         <ModalBody>

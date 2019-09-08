@@ -124,11 +124,11 @@ def travel(travel_id):
                     'id': post.id})
 
 
-@app.route("/posts", methods=['GET'])
-def get_posts():
+@app.route("/posts/page/<int:page>", methods=['GET'])
+def get_posts(page):
     res = []
-    posts = Travel.query.all()
-    for post in posts:
+    posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=1)
+    for post in posts.items:
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,

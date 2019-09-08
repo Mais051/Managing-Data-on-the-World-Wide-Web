@@ -127,14 +127,16 @@ def travel(travel_id):
 @app.route("/posts/page/<int:page>", methods=['GET'])
 def get_posts(page):
     res = []
-    posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=1)
+    all_posts = Travel.query.all()
+    posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
     for post in posts.items:
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id})
+
     result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result})
+    return jsonify({'posts': result, 'length': len(all_posts)})
 
 
 @app.route("/posts/new", methods=['POST'])

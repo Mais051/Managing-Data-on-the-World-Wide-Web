@@ -189,8 +189,8 @@ class Register extends Component {
               </div>
               <div className="form-group">
                 <label htmlFor="name">Gender</label><br></br>
-                <input type="radio" name="gender" value="male" onChange={this.onChange}/> Male<br></br>
-                <input type="radio" name="gender" value="female" onChange={this.onChange}/> Female<br></br>
+                <input type="radio" name="gender" value="Male" onChange={this.onChange}/> Male<br></br>
+                <input type="radio" name="gender" value="Female" onChange={this.onChange}/> Female<br></br>
                 <input type="radio" name="gender" value="other" onChange={this.onChange}/> Other
               </div>
                  {this.state.errors.gender.length > 0 &&

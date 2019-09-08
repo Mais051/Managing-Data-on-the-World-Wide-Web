@@ -31,14 +31,15 @@ class Posts extends Component {
             postToDelete: 0,
             postToUpdate: 0,
             pageCount: 0,
-            current_page: 1
+            current_page: 1,
+            amount_of_posts: 0
         }
         this.onChange = this.onChange.bind(this)
     }
 
 
     componentWillMount() {
-        this._refreshPosts();
+        this._refreshPosts(this.state.current_page);
     }
 
     handleChangeStart = date => {
@@ -109,7 +110,7 @@ class Posts extends Component {
          axios.defaults.withCredentials = true;
     axios.delete('http://127.0.0.1:5000/posts/'+this.state.postToDelete)
         .then((response) => {
-            this._refreshPosts();
+            this._refreshPosts(1);
 
       this.setState({
       deletePostModal: false
@@ -129,7 +130,7 @@ class Posts extends Component {
             title: this.state.title
         })
         .then((response) => {
-            this._refreshPosts();
+            this._refreshPosts(this.state.current_page);
             this.setState({
                 start_date: '',
                 end_date: '',
@@ -159,7 +160,7 @@ class Posts extends Component {
             title: this.state.title
         })
         .then((response) => {
-            this._refreshPosts();
+            this._refreshPosts(1);
       this.setState({
          start_date: '',
           end_date: '',
@@ -182,23 +183,23 @@ class Posts extends Component {
     });
   }
 
-    _refreshPosts() {
-        axios.get('http://127.0.0.1:5000/posts/page/' + this.state.current_page).then((response) => {
+    _refreshPosts(page) {
+        axios.get('http://127.0.0.1:5000/posts/page/' + page).then((response) => {
             this.setState({
-                posts: response.data.posts
+                posts: response.data.posts,
+                amount_of_posts: response.data.length
             })
         }) .catch(err => {
       console.log(err)});
-        ;
 
     }
 
     handlePageClick = data => {
         const new_page = (data.selected+1);
-        this.setState({ current_page: new_page }
-
-        );
-        this._refreshPosts();
+          this.setState({
+                current_page: new_page
+            });
+        this._refreshPosts(new_page);
   };
     isPostMine(post){
         const token = localStorage.usertoken
@@ -250,16 +251,15 @@ class Posts extends Component {
                 {posts}
 
                  <ReactPaginate
-                      previousLabel={'previous'}
-                      nextLabel={'next'}
                       breakLabel={'...'}
                       breakClassName={'break-me'}
-                      pageCount={20}
+                      pageCount={Math.ceil(this.state.amount_of_posts/5)}
                       marginPagesDisplayed={2}
                       pageRangeDisplayed={5}
                       onPageChange={this.handlePageClick}
                       containerClassName={'pagination'}
                       subContainerClassName={'pages pagination'}
+                      disabledClassName={'disabled'}
                       activeClassName={'active'}
                     />
                  <Modal isOpen={this.state.deletePostModal} toggle={this.toggleDeletePostModal.bind(this)}>

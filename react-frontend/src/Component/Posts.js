@@ -78,8 +78,8 @@ class Posts extends Component {
        zip: post.zip,
        city: post.city,
        content: post.content,
-        //start_date: post.start_date,
-        //end_date: post.end_date,
+        start_date: new Date(post.start_date),
+        end_date: new Date(post.end_date),
        title: post.title
     });
   }

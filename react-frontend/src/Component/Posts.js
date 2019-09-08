@@ -70,6 +70,11 @@ class Posts extends Component {
     });
   }
 
+  toggleUpdatePostModalCancel(){
+        this.setState({
+                          updatePostModal: ! this.state.updatePostModal,
+    });
+}
   toggleUpdatePostModal(post) {
     this.setState({
       updatePostModal: ! this.state.updatePostModal,
@@ -78,8 +83,8 @@ class Posts extends Component {
        zip: post.zip,
        city: post.city,
        content: post.content,
-        start_date: new Date(post.start_date),
-        end_date: new Date(post.end_date),
+       //start_date: new Date(post.start_date),
+       // end_date: new Date(post.end_date),
        title: post.title
     });
   }
@@ -295,7 +300,7 @@ class Posts extends Component {
                         </ModalBody>
                         <ModalFooter>
                             <Button color="primary" onClick={this.updatePost.bind(this)}>Update Post</Button>{' '}
-                            <Button color="secondary" onClick={this.toggleUpdatePostModal.bind(this)}>Cancel</Button>
+                            <Button color="secondary" onClick={this.toggleUpdatePostModalCancel.bind(this)}>Cancel</Button>
                         </ModalFooter>
                     </Modal>
 

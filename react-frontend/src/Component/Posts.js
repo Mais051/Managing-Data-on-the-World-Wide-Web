@@ -11,6 +11,107 @@ import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
 import ReactPaginate from 'react-paginate';
 
+const validIntRegex =
+  RegExp(/^[0-9\b]+$/);
+
+const validateForm = (errors) => {
+  let valid = true;
+  Object.values(errors).forEach(
+    (val) => val.length > 0 && (valid = false)
+  );
+  return valid;
+}
+function PostForm(props){
+    return (
+        <form noValidate onSubmit={props.onSubmit}>
+            <label htmlFor="name">Post title</label>
+            <input
+                type="text"
+                className="form-control"
+                name="title"
+                placeholder="Enter your title"
+                value={props.title}
+                onChange={props.onChange}
+                noValidate
+            />
+             {props.errors.title.length > 0 &&
+                <span className='error'>{props.errors.title}</span>}
+                <br/>
+            <div className="form-group">
+                <label htmlFor="name">Start date</label><br></br>
+                <DatePicker
+                    name="start_date"
+                    selected={props.start_date}
+                    onChange={props.handleChangeStart}
+                    dateFormat="dd/MM/yyyy"
+                    minDate={new Date()}
+                />
+            </div>
+            <div className="form-group">
+                <label htmlFor="name">End date</label><br></br>
+                <DatePicker
+                    name="end_date"
+                    selected={props.end_date}
+                    onChange={props.handleChangeEnd}
+                    dateFormat="dd/MM/yyyy"
+                    minDate={props.start_date}
+                />
+            </div>
+                <br/>
+            <label htmlFor="name">Country</label>
+            <input
+                type="text"
+                className="form-control"
+                name="country"
+                placeholder="Enter country name"
+                value={props.country}
+                onChange={props.onChange}
+                noValidate
+            />
+                {props.errors.country.length > 0 &&
+                <span className='error'>{props.errors.country}</span>}
+                <br/>
+            <label htmlFor="name">City</label>
+            <input
+                type="text"
+                className="form-control"
+                name="city"
+                placeholder="Enter city name"
+                value={props.city}
+                onChange={props.onChange}
+                noValidate
+            />
+                {props.errors.city.length > 0 &&
+                <span className='error'>{props.errors.city}</span>}
+                <br/>
+            <label htmlFor="name">Zip</label>
+            <input
+                type="text"
+                className="form-control"
+                name="zip"
+                placeholder="Enter zip code"
+                value={props.zip}
+                onChange={props.onChange}
+                noValidate
+            />
+                {props.errors.zip.length > 0 &&
+                <span className='error'>{props.errors.zip}</span>}
+                <br/>
+            <label htmlFor="name">Content</label>
+            <textarea
+                type="text"
+                className="form-control"
+                name="content"
+                placeholder="Enter your post content"
+                value={props.content}
+                onChange={props.onChange}
+                noValidate
+                textarea/>
+                    {props.errors.content.length > 0 &&
+                <span className='error'>{props.errors.content}</span>}
+        </form>
+    );
+}
 
 export class Posts extends Component {
     constructor() {
@@ -34,7 +135,13 @@ export class Posts extends Component {
             current_page: 1,
             amount_of_posts: 0,
             current_user: 0,
-            wanted_user:0
+              errors: {
+                  country: 'This field is required',
+                  city: 'This field is required',
+                  zip: 'This field is required',
+                  content: 'This field is required',
+                  title: 'This field is required'
+              }
         }
         this.onChange = this.onChange.bind(this)
     }
@@ -47,8 +154,9 @@ export class Posts extends Component {
     }
 
     handleChangeStart = date => {
-    this.setState({start_date: date}
-    );
+        this.setState({start_date: date});
+        if (date > this.state.end_date)
+            this.setState({end_date: date});
   };
     handleChangeEnd = date => {
     this.setState({end_date: date}
@@ -56,11 +164,19 @@ export class Posts extends Component {
   };
     toggleNewPostModal() {
     this.setState({
-      newPostModal: ! this.state.newPostModal
+      newPostModal: ! this.state.newPostModal,
+        invalid: 0,
+         errors: {
+                  country: 'This field is required',
+                  city: 'This field is required',
+                  zip: 'This field is required',
+                  content: 'This field is required',
+                  title: 'This field is required'
+              }
     });
      this.setState({
-         start_date: '',
-          end_date: '',
+         start_date: new Date(),
+          end_date: new Date(),
           country:'',
           zip:'',
           city:'',
@@ -92,7 +208,15 @@ export class Posts extends Component {
                 content: post.content,
                 start_date: new Date(post.start_date),
                 end_date: new Date(post.end_date),
-                title: post.title
+                title: post.title,
+                invalid: 0,
+                errors: {
+                  country: '',
+                  city: '',
+                  zip: '',
+                  content: '',
+                  title: ''
+              }
             });
         }
         else{
@@ -106,6 +230,14 @@ export class Posts extends Component {
                           title: '',
                           postToUpdate: 0,
                           postToDelete: 0,
+                            invalid : 0,
+                            errors: {
+                              country: '',
+                                city: '',
+                                zip: '',
+                                content: '',
+                                title: ''
+                          }
              });
         }
   }
@@ -124,67 +256,85 @@ export class Posts extends Component {
   }
      updatePost() {
         this.setState({invalid: 0});
-        axios.defaults.withCredentials = true;
-    axios.put('http://127.0.0.1:5000/posts/'+this.state.postToUpdate, {start_date: this.state.start_date,
-            end_date: this.state.end_date,
-            country: this.state.country,
-            city: this.state.city,
-            zip: this.state.zip,
-            content: this.state.content,
-            title: this.state.title
-        })
-        .then((response) => {
-            this._refreshPosts(this.state.current_page);
-            this.setState({
-                start_date: '',
-                end_date: '',
-                country: '',
-                zip: '',
-                city: '',
-                content: '',
-                title: '',
-                postToUpdate: 0,
-                postToDelete: 0,
-            });
 
-            this.setState({
-                updatePostModal: false
-            });
-        });
+        if (validateForm(this.state.errors)) {
+            axios.defaults.withCredentials = true;
+            axios.put('http://127.0.0.1:5000/posts/' + this.state.postToUpdate, {
+                start_date: this.state.start_date,
+                end_date: this.state.end_date,
+                country: this.state.country,
+                city: this.state.city,
+                zip: this.state.zip,
+                content: this.state.content,
+                title: this.state.title
+            })
+                .then((response) => {
+                    this._refreshPosts(this.state.current_page);
+                    this.setState({
+                        start_date: '',
+                        end_date: '',
+                        country: '',
+                        zip: '',
+                        city: '',
+                        content: '',
+                        title: '',
+                        postToUpdate: 0,
+                        postToDelete: 0,
+                    });
+
+                    this.setState({
+                        updatePostModal: false
+                    });
+                })
+                .catch(err => {
+                    console.log(err)
+                    this.setState({invalid: 1});
+                });;
+        }
+        else{
+            this.setState({invalid: 1});
+        }
     }
    addPost() {
         this.setState({invalid: 0});
-        axios.defaults.withCredentials = true;
-    axios.post('http://127.0.0.1:5000/posts/new', {start_date: this.state.start_date,
-            end_date: this.state.end_date,
-            country: this.state.country,
-            city: this.state.city,
-            zip: this.state.zip,
-            content: this.state.content,
-            title: this.state.title
-        })
-        .then((response) => {
-            this._refreshPosts(1);
-      this.setState({
-         start_date: '',
-          end_date: '',
-          country:'',
-          zip:'',
-          city:'',
-          content:'',
-          title: '',
-          postToUpdate: 0,
-          postToDelete: 0,
-        });
 
-      this.setState({
-      newPostModal: false
-    });
-    })
-    .catch(err => {
-      console.log(err)
-       this.setState({invalid: 1});
-    });
+        if (validateForm(this.state.errors)) {
+            axios.defaults.withCredentials = true;
+            axios.post('http://127.0.0.1:5000/posts/new', {
+                start_date: this.state.start_date,
+                end_date: this.state.end_date,
+                country: this.state.country,
+                city: this.state.city,
+                zip: this.state.zip,
+                content: this.state.content,
+                title: this.state.title
+            })
+                .then((response) => {
+                    this._refreshPosts(1);
+                    this.setState({
+                        start_date: '',
+                        end_date: '',
+                        country: '',
+                        zip: '',
+                        city: '',
+                        content: '',
+                        title: '',
+                        postToUpdate: 0,
+                        postToDelete: 0,
+                    });
+
+                    this.setState({
+                        newPostModal: false
+                    });
+                })
+                .catch(err => {
+                    console.log(err)
+                    this.setState({invalid: 1});
+                });
+        }
+        else {
+            this.setState({invalid: 1});
+        }
   }
 
     _refreshPosts(page) {
@@ -225,11 +375,47 @@ export class Posts extends Component {
     }
 
       onChange(e) {
-      //  e.preventDefault()
-          const { name, value } = e.target;
-          this.setState({[name]: value});
+         let errors = this.state.errors;
+        const { name, value } = e.target;
+
+        switch (name) {
+            case 'title':
+                errors.title =
+                  value.length < 1
+                    ? 'This field is required'
+                    : '';
+                break;
+            case 'zip':
+                errors.zip =
+                  validIntRegex.test(value)  && value.length >=1
+                    ? ''
+                    : 'Zip code must be a valid number';
+                break;
+              case 'country':
+                errors.country =
+                  value.length < 1
+                    ? 'This field is required'
+                    : '';
+                break;
+                case 'city':
+                errors.city =
+                  value.length < 1
+                    ? 'This field is required'
+                    : '';
+                break;
+                case 'content':
+                errors.content =
+                  value.length < 1
+                    ? 'This field is required'
+                    : '';
+                break;
+              default:
+                break;
+        }
+        this.setState({errors, [name]: value});
 
     }
+
 
     render() {
         let posts =  this.state.posts.map((post) => {
@@ -294,76 +480,20 @@ export class Posts extends Component {
                              {this.state.invalid >0 &&  <Alert color="danger">
                               Your post is invalid. Please try again!
                             </Alert> }
-                             <form noValidate onSubmit={this.onSubmit}>
-                                 <label htmlFor="name">Post title</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="title"
-                                      placeholder="Enter your title"
-                                      value={this.state.title}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                  <div className="form-group">
-                                      <label htmlFor="name">Start date</label><br></br>
-                                    <DatePicker
-                                     name="start_date"
-                                     selected={this.state.start_date}
-                                     onChange={this.handleChangeStart}
-                                     dateFormat="dd/MM/yyyy"
-                                    />
-                                  </div>
-                                   <div className="form-group">
-                                      <label htmlFor="name">End date</label><br></br>
-                                    <DatePicker
-                                     name="end_date"
-                                     selected={this.state.end_date}
-                                     onChange={this.handleChangeEnd}
-                                     dateFormat="dd/MM/yyyy"
-                                    />
-                                  </div>
-                                 <label htmlFor="name">Country</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="country"
-                                      placeholder="Enter country name"
-                                      value={this.state.country}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                    <label htmlFor="name">City</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="city"
-                                      placeholder="Enter city name"
-                                      value={this.state.city}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                      <label htmlFor="name">Zip</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="zip"
-                                      placeholder="Enter zip code"
-                                      value={this.state.zip}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                    <label htmlFor="name">Content</label>
-                                    <textarea
-                                      type="text"
-                                      className="form-control"
-                                      name="content"
-                                      placeholder="Enter your post content"
-                                      value={this.state.content}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    textarea/>
-                                </form>
+                             <PostForm
+                                 onChange={this.onChange}
+                                 handleChangeStart={this.handleChangeStart}
+                                 handleChangeEnd={this.handleChangeEnd}
+                                 onSubmit={this.onSubmit}
+                                 content={this.state.content}
+                                 title={this.state.title}
+                                 start_date={this.state.start_date}
+                                 end_date={this.state.end_date}
+                                 country={this.state.country}
+                                 zip={this.state.zip}
+                                 city={this.state.city}
+                                 errors={this.state.errors}
+                             />
                         </ModalBody>
                         <ModalFooter>
                             <Button color="primary" onClick={this.updatePost.bind(this)}>Update Post</Button>{' '}
@@ -377,76 +507,20 @@ export class Posts extends Component {
                              {this.state.invalid >0 &&  <Alert color="danger">
                               Your post is invalid. Please try again!
                             </Alert> }
-                             <form noValidate onSubmit={this.onSubmit}>
-                                 <label htmlFor="name">Post title</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="title"
-                                      placeholder="Enter your title"
-                                      value={this.state.title}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                  <div className="form-group">
-                                      <label htmlFor="name">Start date</label><br></br>
-                                    <DatePicker
-                                     name="start_date"
-                                     selected={this.state.start_date}
-                                     onChange={this.handleChangeStart}
-                                     dateFormat="dd/MM/yyyy"
-                                    />
-                                  </div>
-                                   <div className="form-group">
-                                      <label htmlFor="name">End date</label><br></br>
-                                    <DatePicker
-                                     name="end_date"
-                                     selected={this.state.end_date}
-                                     onChange={this.handleChangeEnd}
-                                     dateFormat="dd/MM/yyyy"
-                                    />
-                                  </div>
-                                 <label htmlFor="name">Country</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="country"
-                                      placeholder="Enter country name"
-                                      value={this.state.country}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                    <label htmlFor="name">City</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="city"
-                                      placeholder="Enter city name"
-                                      value={this.state.city}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                      <label htmlFor="name">Zip</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      name="zip"
-                                      placeholder="Enter zip code"
-                                      value={this.state.zip}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    />
-                                    <label htmlFor="name">Content</label>
-                                    <textarea
-                                      type="text"
-                                      className="form-control"
-                                      name="content"
-                                      placeholder="Enter your post content"
-                                      value={this.state.content}
-                                      onChange={this.onChange}
-                                      noValidate
-                                    textarea/>
-                                </form>
+                            <PostForm
+                                 onChange={this.onChange}
+                                 handleChangeStart={this.handleChangeStart}
+                                 handleChangeEnd={this.handleChangeEnd}
+                                 onSubmit={this.onSubmit}
+                                 content={this.state.content}
+                                 title={this.state.title}
+                                 start_date={this.state.start_date}
+                                 end_date={this.state.end_date}
+                                 country={this.state.country}
+                                 zip={this.state.zip}
+                                 city={this.state.city}
+                                 errors={this.state.errors}
+                             />
                         </ModalBody>
                         <ModalFooter>
                             <Button color="primary" onClick={this.addPost.bind(this)}>Add Post</Button>{' '}

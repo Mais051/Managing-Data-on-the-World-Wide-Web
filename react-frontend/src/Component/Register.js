@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import DatePicker from "react-datepicker"
 import { register } from './UserOpt'
 import "react-datepicker/dist/react-datepicker.css";
-import moment from 'moment';
 import Alert from "reactstrap/es/Alert";
 
 
@@ -202,6 +201,7 @@ class Register extends Component {
                  selected={this.state.birth_date}
                  onChange={this.handleChange}
                  dateFormat="dd/MM/yyyy"
+                 maxDate={new Date()}
                 />
               </div>
               <div className="form-group">

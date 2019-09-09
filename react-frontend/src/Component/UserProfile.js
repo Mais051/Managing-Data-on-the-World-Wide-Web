@@ -9,9 +9,6 @@ export class UserProfile extends Component{
     componentWillReceiveProps(){
          this.setState({user_id: this.props.match.params.id});
     }
-    refresh(){
-        this.setState({user_id: this.props.match.params.id});
-    }
     render(){
         return( <div>
                 <NavBarUser id = {this.state.user_id}/>

@@ -33,13 +33,13 @@ export class Posts extends Component {
             pageCount: 0,
             current_page: 1,
             amount_of_posts: 0,
-            current_user: 0
+            current_user: 0,
+            wanted_user:0
         }
         this.onChange = this.onChange.bind(this)
     }
 
-
-    componentWillMount() {
+    componentDidMount(){
         const token = localStorage.usertoken;
         const decoded = jwt_decode(token);
         this.setState({current_user: decoded.identity.id});

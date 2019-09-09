@@ -16,7 +16,9 @@ export class Profile extends Component {
       errors: {}
     }
   }
-
+  componentWillReceiveProps(){
+    this.componentDidMount()
+  }
   componentDidMount() {
     if (!this.props.id) {
       const token = localStorage.usertoken

@@ -31,10 +31,6 @@ export class NavBarUser extends Component{
                                           <h1 className="account-heading">{this.state.username}</h1>
                                           <p className="text-secondary">{this.state.email}</p>
                                       </div>
-
-                          {/*<img className="rounded-circle account-img small" src={"http://127.0.0.1:5000"+this.state.image_file}/>*/}
-                          {/*<h1 className="display-3">{this.state.username}</h1>*/}
-                          {/*<p className="lead">{this.state.email}</p>*/}
                       </div>
                     </div>
                     </div>

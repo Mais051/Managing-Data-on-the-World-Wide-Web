@@ -48,6 +48,10 @@ class App extends Component {
                 isLoggedIn() ? (
                     <UserProfile {...props} />) : (<Redirect to="/login"/> )
             )}/>
+            <Route exact path="/profile/:id" render={(props) => (
+                isLoggedIn() ? (
+                    <UserProfile {...props} />) : (<Redirect to="/login"/> )
+            )}/>
              <Route exact path="/users/about-me/:id" render={(props) => (
                 isLoggedIn() ? (
                     <AboutMe {...props} />) : (<Redirect to="/login"/> )

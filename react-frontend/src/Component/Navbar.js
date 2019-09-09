@@ -8,6 +8,7 @@ class Navbar extends Component {
     state ={
         current_user: 0
     }
+
   logOut(e) {
       e.preventDefault()
       localStorage.removeItem('usertoken')
@@ -18,6 +19,11 @@ class Navbar extends Component {
           console.log(err)
         })
   }
+   componentDidUpdate (prevProps) {
+    if (prevProps.location.key !== this.props.location.key) {
+        this.componentDidMount();
+    }
+     }
   componentDidMount() {
       const token = localStorage.usertoken;
       if (token) {
@@ -29,6 +35,7 @@ class Navbar extends Component {
   }
 
   render() {
+
     const loginRegLink = (
       <ul className="navbar-nav">
         <li className="nav-item">
@@ -52,7 +59,7 @@ class Navbar extends Component {
           </Link>
         </li>
         <li className="nav-item">
-          <Link to={"/users/"+this.state.current_user} className="nav-link">
+          <Link to={"/profile/"+this.state.current_user} className="nav-link">
             User
           </Link>
         </li>

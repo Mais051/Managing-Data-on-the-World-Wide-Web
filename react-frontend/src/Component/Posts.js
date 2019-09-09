@@ -32,13 +32,17 @@ export class Posts extends Component {
             postToUpdate: 0,
             pageCount: 0,
             current_page: 1,
-            amount_of_posts: 0
+            amount_of_posts: 0,
+            current_user: 0
         }
         this.onChange = this.onChange.bind(this)
     }
 
 
     componentWillMount() {
+        const token = localStorage.usertoken;
+        const decoded = jwt_decode(token);
+        this.setState({current_user: decoded.identity.id});
         this._refreshPosts(this.state.current_page);
     }
 
@@ -233,7 +237,7 @@ export class Posts extends Component {
                 <div>
                     <div className="card text-center">
                         <div className="card-header">
-                            Post by: <a href="#">{post.username}</a>
+                            Post by: <a href={"/users/"+post.user_id}>{post.username}</a>
                         </div>
                         <div className="card-body">
                             <h5 className="card-title">{post.title}</h5>
@@ -257,8 +261,8 @@ export class Posts extends Component {
         });
         return (
              <div>
-                  <p className="m-md-4" align="center">
-                        <Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>
+                 <p className="m-md-4" align="center">
+                        {(!this.props.id || this.props.id == this.state.current_user) &&<Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>}
                     </p>
                 {posts}
 

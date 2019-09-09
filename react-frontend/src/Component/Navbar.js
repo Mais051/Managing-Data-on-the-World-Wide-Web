@@ -1,9 +1,13 @@
 import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
 import axios from "axios";
+import jwt_decode from "jwt-decode";
 
 
 class Navbar extends Component {
+    state ={
+        current_user: 0
+    }
   logOut(e) {
       e.preventDefault()
       localStorage.removeItem('usertoken')
@@ -13,6 +17,15 @@ class Navbar extends Component {
         .catch(err => {
           console.log(err)
         })
+  }
+  componentDidMount() {
+      const token = localStorage.usertoken;
+      if (token) {
+          const decoded = jwt_decode(token);
+          this.setState({
+              current_user: decoded.identity.id
+          })
+      }
   }
 
   render() {
@@ -39,7 +52,7 @@ class Navbar extends Component {
           </Link>
         </li>
         <li className="nav-item">
-          <Link to="/profile" className="nav-link">
+          <Link to={"/users/"+this.state.current_user} className="nav-link">
             User
           </Link>
         </li>

@@ -68,7 +68,7 @@ class Login extends Component {
     if(validateForm(this.state.errors)) {
       login(user).then(res => {
       if (res != 'error') {
-        this.props.history.push(`/profile`)
+        this.props.history.push(`/`)
       }
       else {
         this.setState({invalid: 1});

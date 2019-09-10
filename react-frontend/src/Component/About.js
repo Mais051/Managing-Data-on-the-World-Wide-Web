@@ -224,7 +224,19 @@ export class About extends Component {
   }
 
   toggleUpdate(){
-    this.setState({flag: !this.state.flag});
+    this.setState({
+      flag: !this.state.flag,
+      errors: {
+          username: '',
+          email: '',
+          first_name: '',
+          last_name: '',
+      },
+      user_taken: 0,
+      email_taken: 0,
+      invalid: 0});
+    if (!this.state.flag)
+      this.componentDidMount();
   }
 
   handleChange = date => {

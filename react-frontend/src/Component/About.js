@@ -51,27 +51,27 @@ function ProfileInfo(props){
      <table className="table col-md-6 mx-auto">
             <tbody>
               <tr>
-                <td>Username</td>
+                <td><b>Username</b></td>
                 <td>{props.username}</td>
               </tr>
               <tr>
-                <td>First Name</td>
+                  <td><b>First Name</b></td>
                 <td>{props.first_name}</td>
               </tr>
               <tr>
-                <td>Last Name</td>
+                  <td><b>Last Name</b></td>
                 <td>{props.last_name}</td>
               </tr>
               <tr>
-                <td>Gender</td>
+                  <td><b>Gender</b></td>
                 <td>{props.gender}</td>
               </tr>
               <tr>
-                <td>Birth Date</td>
+                  <td><b>Birth Date</b></td>
                 <td>{moment(props.birth_date).format("LL")}</td>
               </tr>
               <tr>
-                <td>Email</td>
+                  <td><b>Email</b></td>
                 <td>{props.email}</td>
               </tr>
             </tbody>

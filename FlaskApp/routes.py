@@ -142,7 +142,7 @@ def get_posts(page):
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id})
+                    'user_id': post.traveler.id, 'id': post.id,'image_file': post.traveler.image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts)})

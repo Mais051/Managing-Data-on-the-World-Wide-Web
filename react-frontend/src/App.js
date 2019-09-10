@@ -8,9 +8,6 @@ import Register from './Component/Register'
 import Profile from './Component/Profile'
 import Posts from './Component/Posts'
 import {Redirect} from "react-router-dom";
-import UserProfile from "./Component/UserProfile";
-import AboutMe from "./Component/AboutMe";
-
 
 
 function isLoggedIn() {
@@ -46,15 +43,11 @@ class App extends Component {
             )}/>
              <Route exact path="/users/:id" render={(props) => (
                 isLoggedIn() ? (
-                    <UserProfile {...props} />) : (<Redirect to="/login"/> )
+                    <Profile {...props} />) : (<Redirect to="/login"/> )
             )}/>
             <Route exact path="/profile/:id" render={(props) => (
                 isLoggedIn() ? (
-                    <UserProfile {...props} />) : (<Redirect to="/login"/> )
-            )}/>
-             <Route exact path="/users/about-me/:id" render={(props) => (
-                isLoggedIn() ? (
-                    <AboutMe {...props} />) : (<Redirect to="/login"/> )
+                    <Profile {...props} />) : (<Redirect to="/login"/> )
             )}/>
           </div>
         </div>

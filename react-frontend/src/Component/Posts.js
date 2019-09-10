@@ -153,6 +153,12 @@ export class Posts extends Component {
         this._refreshPosts(this.state.current_page);
     }
 
+    componentDidUpdate (prevProps) {
+       if (prevProps.id !== this.props.id) {
+           this.componentDidMount();
+       }
+   }
+
     handleChangeStart = date => {
         this.setState({start_date: date});
         if (date > this.state.end_date)

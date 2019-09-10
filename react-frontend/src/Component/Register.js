@@ -1,8 +1,24 @@
 import React, { Component } from 'react'
 import DatePicker from "react-datepicker"
-import { register } from './UserOpt'
 import "react-datepicker/dist/react-datepicker.css";
 import Alert from "reactstrap/es/Alert";
+import axios from "axios";
+
+export const register = newUser => {
+  return axios
+    .post('http://127.0.0.1:5000/user/new', {
+      username: newUser.username,
+      first_name: newUser.first_name,
+      last_name: newUser.last_name,
+      gender: newUser.gender,
+      birth_date: newUser.birth_date,
+      email: newUser.email,
+      password: newUser.password
+    })
+    .then(response => {
+        return response.data
+    })
+}
 
 
 const validEmailRegex =

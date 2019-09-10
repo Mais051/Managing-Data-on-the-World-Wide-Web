@@ -1,7 +1,24 @@
 import React, { Component } from 'react'
-import { login } from './UserOpt'
 import Alert from "reactstrap/es/Alert";
+import axios from "axios";
 
+
+export const login = user => {
+  axios.defaults.withCredentials = true;
+  return axios
+      .post('http://127.0.0.1:5000/login', {
+        email: user.email,
+        password: user.password
+      })
+      .then(response => {
+        localStorage.setItem('usertoken', response.data)
+        return response.data
+      })
+      .catch(err => {
+        console.log(err)
+        return 'error'
+      })
+}
 
 const validEmailRegex =
   RegExp(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i);

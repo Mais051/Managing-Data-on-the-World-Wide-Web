@@ -61,11 +61,13 @@ def get_user_posts():
     user = User.query.get_or_404(user_id)
     posts = Travel.query.filter_by(traveler=user).order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
     res = []
+    image_file = url_for('static', filename='profile_pics/' + user.image_file)
+
     for post in posts.items:
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
                        'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id})
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file })
     all_posts = Travel.query.filter_by(traveler=user).all()
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
@@ -95,6 +97,19 @@ def register():
     return 'Created'
 
 
+@app.route("/image/<int:user_id>", methods=['PUT'])
+@login_required
+def user_img_update(user_id):
+    file = request.files['file']
+    user = User.query.get_or_404(user_id)
+    if current_user != user or not file:
+        abort(400)
+    path = save_picture(file)
+    current_user.image_file = path
+    db.session.commit()
+    return jsonify({'image_file': url_for('static', filename='profile_pics/' + path)})
+
+
 @app.route("/users/<int:user_id>", methods=['PUT'])
 @login_required
 def user_update(user_id):
@@ -111,9 +126,7 @@ def user_update(user_id):
     check_user = User.query.filter_by(username=user_data['username']).first()
     if check_user and (check_user != current_user):
         return 'Username Taken'
-    if 'image_file' in user_data:
-        picture_file = save_picture(user_data['image_file'])
-        current_user.image_file = picture_file
+
     current_user.username = user_data['username']
     current_user.first_name = user_data['first_name']
     current_user.last_name = user_data['last_name']
@@ -127,10 +140,12 @@ def user_update(user_id):
 @app.route("/posts/<int:travel_id>", methods=['GET'])
 def travel(travel_id):
     post = Travel.query.get_or_404(travel_id)
+    image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
+
     return jsonify({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city, 'zip': post.zip,
                     'content': post.content, 'username': post.traveler.username, 'user_id': post.traveler.id,
-                    'id': post.id})
+                    'id': post.id, 'image_file': image_file})
 
 
 @app.route("/posts/page/<int:page>", methods=['GET'])
@@ -138,11 +153,13 @@ def get_posts(page):
     res = []
     all_posts = Travel.query.all()
     posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
+
     for post in posts.items:
+        image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id,'image_file': post.traveler.image_file})
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file':image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts)})

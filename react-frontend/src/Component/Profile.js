@@ -55,8 +55,14 @@ export class Profile extends Component{
         this.setState({
               username: info.username,
                 email: info.email,
-                // image_file: info.image_file
         });
+
+   }
+   updateMenuPic(info){
+        this.setState({
+              image_file: info.image_file,
+        });
+
    }
     render(){
         return( <div>
@@ -99,7 +105,8 @@ export class Profile extends Component{
                         </Nav>
 
             {this.state.postsFlag ? <Posts id ={this.props.match.params.id}/> : <br/>}
-            {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)}/> : <br/>}
+            {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)}
+                    updatePic={this.updateMenuPic.bind(this)} /> : <br/>}
             {/*{this.state.friendsFlag && <Friends id ={this.state.user_id}/>}*/}
 
             </div>

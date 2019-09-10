@@ -427,9 +427,14 @@ export class Posts extends Component {
         let posts =  this.state.posts.map((post) => {
             return (
                 <div>
+
                     <div className="card text-center">
                         <div className="card-header">
-                            Post by: <a href={"/users/"+post.user_id}>{post.username}</a>
+                             <img  className="rounded-circle account-img"
+                                               src={"http://127.0.0.1:5000" + post.image_file}
+                                               height="60" width="60"
+                            />
+                             <a href={"/users/"+post.user_id}>{'     '+post.username}</a>
                         </div>
                         <div className="card-body">
                             <h5 className="card-title">{post.title}</h5>

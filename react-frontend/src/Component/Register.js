@@ -53,7 +53,7 @@ class Register extends Component {
       },
       user_taken: 0,
       email_taken: 0,
-      invalid: 0,
+      invalid: 0
     }
 
     this.onChange = this.onChange.bind(this)

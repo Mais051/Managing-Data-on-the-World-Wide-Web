@@ -50,6 +50,14 @@ export class Profile extends Component{
            this.componentDidMount();
        }
    }
+
+   updateMenuInfo(info){
+        this.setState({
+              username: info.username,
+                email: info.email,
+                // image_file: info.image_file
+        });
+   }
     render(){
         return( <div>
                     <div className="jumbotron-fluid mt-5" >
@@ -91,7 +99,7 @@ export class Profile extends Component{
                         </Nav>
 
             {this.state.postsFlag ? <Posts id ={this.props.match.params.id}/> : <br/>}
-            {this.state.aboutFlag ? <About id ={this.props.match.params.id}/> : <br/>}
+            {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)}/> : <br/>}
             {/*{this.state.friendsFlag && <Friends id ={this.state.user_id}/>}*/}
 
             </div>

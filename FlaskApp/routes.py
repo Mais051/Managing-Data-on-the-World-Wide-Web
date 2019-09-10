@@ -102,9 +102,15 @@ def user_update(user_id):
     user = User.query.get_or_404(user_id)
     if current_user != user or not user_data:
         abort(400)
-    if not 'password' in user_data or not 'username' in user_data or not 'first_name' in user_data \
+    if not 'username' in user_data or not 'first_name' in user_data \
             or not 'last_name' in user_data or not 'gender' in user_data or not 'birth_date' in user_data or not 'email' in user_data:
         abort(400)
+    check_user = User.query.filter_by(email=user_data['email']).first()
+    if check_user and (check_user != current_user):
+        return 'Email Taken'
+    check_user = User.query.filter_by(username=user_data['username']).first()
+    if check_user and (check_user != current_user):
+        return 'Username Taken'
     if 'image_file' in user_data:
         picture_file = save_picture(user_data['image_file'])
         current_user.image_file = picture_file
@@ -115,13 +121,7 @@ def user_update(user_id):
     current_user.birth_date = user_data['birth_date']
     current_user.email = user_data['email']
     db.session.commit()
-
-    access_token = create_access_token(identity={'id': user.id, 'username': user.username,
-                                                 'first_name': user.first_name,
-                                                 'last_name': user.last_name, 'email': user.email,
-                                                 'birth_date': user.birth_date, 'gender': user.gender,
-                                                 'image_file': user.image_file})
-    return access_token
+    return 'Updated'
 
 
 @app.route("/posts/<int:travel_id>", methods=['GET'])
@@ -208,11 +208,12 @@ def login():
     user = User.query.filter_by(email=user_data['email']).first()
     if user and bcrypt.check_password_hash(user.password, user_data['password']):
         login_user(user, remember=True)
-        access_token = create_access_token(identity={'id': user.id, 'username': user.username,
-                                                     'first_name': user.first_name,
-                                                     'last_name': user.last_name, 'email': user.email,
-                                                     'birth_date': user.birth_date, 'gender': user.gender,
-                                                     'image_file': user.image_file})
+        access_token = create_access_token(identity={'id': user.id})
+        # access_token = create_access_token(identity={'id': user.id, 'username': user.username,
+        #                                              'first_name': user.first_name,
+        #                                              'last_name': user.last_name, 'email': user.email,
+        #                                              'birth_date': user.birth_date, 'gender': user.gender,
+        #                                              'image_file': user.image_file})
         result = access_token
     else:
         abort(400)

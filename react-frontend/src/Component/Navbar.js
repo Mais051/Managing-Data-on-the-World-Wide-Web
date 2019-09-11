@@ -25,15 +25,16 @@ class Navbar extends Component {
     }
 
     onChange(e){
-        this.setState({username: e.target.value});
+        this.setState({username: e.target.value, search_msg:'Search for a user'});
     }
 
   logOut(e) {
       e.preventDefault()
-      localStorage.removeItem('usertoken')
-      this.props.history.push(`/`)
       axios.defaults.withCredentials = true;
-      axios.get('http://127.0.0.1:5000/logout')
+      axios.get('http://127.0.0.1:5000/logout').then(response => {
+          localStorage.removeItem('usertoken')
+          this.props.history.push(`/`)
+      })
         .catch(err => {
           console.log(err)
         })

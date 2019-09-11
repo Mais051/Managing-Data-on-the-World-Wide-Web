@@ -51,9 +51,9 @@ def get_user(user_id):
                     'image_file': image_file})
 
 
-@app.route("/users", methods=['GET'])
+@app.route("/users/posts", methods=['GET'])
 def get_user_posts():
-    user_id = int(request.args.get('id', 1))  # use default value repalce 'None'
+    user_id = int(request.args.get('id', 1))
     page = int(request.args.get('page', 1))
     if not user_id or not page:
         abort(400)
@@ -72,6 +72,14 @@ def get_user_posts():
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts)})
+
+
+@app.route("/user/<string:name>", methods=['GET'])
+def get_user_id(name):
+    user = User.query.filter_by(username=name).first()
+    if not user:
+        abort(404)
+    return jsonify({'id': user.id})
 
 
 @app.route("/user/new", methods=['POST'])

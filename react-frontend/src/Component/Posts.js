@@ -345,6 +345,7 @@ export class Posts extends Component {
 
     _refreshPosts(page) {
         if (!this.props.id) {
+             axios.defaults.withCredentials = true;
             axios.get('http://127.0.0.1:5000/posts/page/' + page).then((response) => {
                 this.setState({
                     posts: response.data.posts,
@@ -355,7 +356,8 @@ export class Posts extends Component {
             });
         }
         else{
-            axios.get('http://127.0.0.1:5000/users?id='+this.props.id+"&page=" + page).then((response) => {
+             axios.defaults.withCredentials = true;
+            axios.get('http://127.0.0.1:5000/users/posts?id='+this.props.id+"&page=" + page).then((response) => {
                 this.setState({
                     posts: response.data.posts,
                     amount_of_posts: response.data.length
@@ -437,12 +439,12 @@ export class Posts extends Component {
                              <a href={"/users/"+post.user_id}>{'     '+post.username}</a>
                         </div>
                         <div className="card-body">
-                            <h5 className="card-title">{post.title}</h5>
-                            <p className="card-text">Start Date: {moment(post.start_date).format("LL")}</p>
-                            <p className="card-text">End Date: {moment(post.end_date).format("LL")}</p>
-                            <p className="card-text">Country: {post.country}</p>
-                            <p className="card-text">City: {post.city}</p>
-                            <p className="card-text">Zip: {post.zip}</p>
+                            <h5 className="card-title"><b>{post.title}</b></h5>
+                            <p className="card-text"><b>Start Date:</b> {moment(post.start_date).format("LL")}</p>
+                            <p className="card-text"><b>End Date:</b> {moment(post.end_date).format("LL")}</p>
+                            <p className="card-text"><b>Country:</b> {post.country}</p>
+                            <p className="card-text"><b>City:</b> {post.city}</p>
+                            <p className="card-text"><b>Zip:</b> {post.zip}</p>
                             <p className="card-text">{post.content}</p>
                             {this.isPostMine(post) && <Button className="my-3" color="secondary" onClick={this.toggleUpdatePostModal.bind(this,post)}>Update</Button>}
                             <a> </a>

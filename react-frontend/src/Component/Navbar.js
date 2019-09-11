@@ -86,7 +86,7 @@ class Navbar extends Component {
             User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           </Link>
         </li>
-                <Form inline onSubmit={e => { e.preventDefault(); }}>
+                <Form inline onSubmit={e => { e.preventDefault(); this.get_user() }}>
               <FormControl type="text" placeholder={this.state.search_msg} onChange={this.onChange.bind(this)}
                 value={this.state.username} className="mr-md-1"/>
 

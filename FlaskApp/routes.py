@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from flask import url_for, request, abort, jsonify, make_response
 from FlaskApp import app, db, bcrypt, login_manager
-from FlaskApp.models import User, Travel
+from FlaskApp.models import User, Travel, Follow
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
 
@@ -48,7 +48,7 @@ def get_user(user_id):
 
     return jsonify({'username': user.username, 'first_name': user.first_name, 'last_name': user.last_name,
                     'gender': user.gender, 'birth_date': user.birth_date, 'email': user.email,
-                    'image_file': image_file})
+                    'image_file': image_file, 'followers': len(user.followers.all()), 'followed': len(user.followed.all())})
 
 
 @app.route("/users/posts", methods=['GET'])
@@ -247,6 +247,79 @@ def login():
 
 
 @app.route("/logout", methods=['GET'])
+@login_required
 def logout():
     logout_user()
     return 'Logged Out', 201
+
+
+@app.route('/follow/<int:user_id>', methods=['POST'])
+@login_required
+def follow(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if current_user.is_following(user):
+        abort(400)
+
+    current_user.follow(user)
+    db.session.commit()
+
+    return 'Followed', 200
+
+
+@app.route('/follow/<int:user_id>', methods=['DELETE'])
+@login_required
+def unfollow(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if not current_user.is_following(user):
+        abort(400)
+
+    current_user.unfollow(user)
+    db.session.commit()
+
+    return 'Unfollowed', 200
+
+
+@app.route('/followers/<int:user_id>', methods=['GET'])
+def followers(user_id):
+    user = User.query.get_or_404(user_id)
+
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.order_by(Follow.timestamp.desc()).paginate(page, per_page=5)
+    res = []
+
+    for item in pagination.items:
+        image_file = url_for('static', filename='profile_pics/' + item.follower.image_file)
+        res.append({'id': item.follower.id, 'username': item.follower.username, 'image_file': image_file,
+                    'timestamp': item.timestamp})
+
+    result = sorted(res, key=lambda d: d['timestamp'], reverse=True)
+    return jsonify({'followers': result, 'length': len(user.followers.all())})
+
+
+@app.route('/following/<user_id>', methods=['GET'])
+def followed_by(user_id):
+    user = User.query.get_or_404(user_id)
+    page = request.args.get('page', 1, type=int)
+
+    pagination = user.followed.order_by(Follow.timestamp.desc()).paginate(page, per_page=5)
+    res = []
+
+    for item in pagination.items:
+        image_file = url_for('static', filename='profile_pics/' + item.followed.image_file)
+        res.append({'id': item.followed.id, 'username': item.followed.username, 'image_file': image_file,
+                    'timestamp': item.timestamp})
+
+    result = sorted(res, key=lambda d: d['timestamp'], reverse=True)
+    return jsonify({'following': result, 'length': len(user.followed.all())})
+
+
+@app.route('/is_following/<int:user_id>', methods=['GET'])
+@login_required
+def is_following(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if current_user.is_following(user):
+        return 'True'
+    return 'False'

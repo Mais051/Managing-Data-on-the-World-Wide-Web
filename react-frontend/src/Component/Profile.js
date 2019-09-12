@@ -4,6 +4,10 @@ import { Nav, NavItem, NavLink } from 'reactstrap';
 import axios from "axios";
 import {Posts} from "./Posts";
 import {About} from "./About";
+import {Users} from "./Users";
+
+import Button from "react-bootstrap/Button";
+import jwt_decode from "jwt-decode";
 
 export class Profile extends Component{
     state={
@@ -12,43 +16,101 @@ export class Profile extends Component{
         image_file: '',
         postsFlag: 1,
         aboutFlag:0,
-        friendsFlag:0
+        followingFlag:0,
+        followersFlag:0,
+        isFollowing: false,
+        current_user:0,
+        followers_amount:0,
+        followed_amount:0
     }
     showPosts(e) {
         e.preventDefault()
         this.setState({
                 postsFlag: 1,
                 aboutFlag: 0,
-                friendsFlag: 0
+                 followingFlag:0,
+                followersFlag:0
             })
     }
 
     showAbout(){
         this.setState({postsFlag: 0,
         aboutFlag:1,
-        friendsFlag:0})
+          followingFlag:0,
+                followersFlag:0})
     }
 
-    showFriends(){
+    showFollowing(){
         this.setState({postsFlag: 0,
         aboutFlag:0,
-        friendsFlag:1})
+          followingFlag:1,
+                followersFlag:0})
+    }
+
+    showFollowers(){
+        this.setState({postsFlag: 0,
+        aboutFlag:0,
+          followingFlag:0,
+                followersFlag:1})
     }
     componentDidMount() {
+         const token = localStorage.usertoken;
+          if (token) {
+              const decoded = jwt_decode(token);
+              this.setState({
+                  current_user: decoded.identity.id
+              });
+          }
         axios.get('http://127.0.0.1:5000/users/' + this.props.match.params.id).then((response) => {
                 this.setState({
                    username: response.data.username,
                     image_file: response.data.image_file,
-                  email: response.data.email
+                  email: response.data.email,
+                    followers_amount: response.data.followers,
+                    followed_amount: response.data.followed,
                 })
             }).catch(err => {
                 console.log(err)
             });
+        axios.defaults.withCredentials = true;
+         axios.get('http://127.0.0.1:5000/is_following/' + this.props.match.params.id).then((response) => {
+             const res = ( response.data == 'True') ? true : false;
+                this.setState({
+                   isFollowing: res
+                })
+            }).catch(err => {
+                console.log(err)
+            });
+
   }
    componentDidUpdate (prevProps) {
        if (prevProps.location.pathname !== this.props.location.pathname) {
            this.componentDidMount();
        }
+   }
+
+   followUser(){
+         axios.defaults.withCredentials = true;
+         axios.post('http://127.0.0.1:5000/follow/' + this.props.match.params.id).then((response) => {
+                this.setState({
+                   isFollowing: true
+                })
+             this.componentDidMount();
+            }).catch(err => {
+                console.log(err)
+            });
+   }
+
+    unfollowUser(){
+         axios.defaults.withCredentials = true;
+         axios.delete('http://127.0.0.1:5000/follow/' + this.props.match.params.id).then((response) => {
+                this.setState({
+                   isFollowing: false
+                })
+             this.componentDidMount();
+            }).catch(err => {
+                console.log(err)
+            });
    }
 
    updateMenuInfo(info){
@@ -76,6 +138,13 @@ export class Profile extends Component{
                                           />
                                           <h1 className="account-heading">{this.state.username}</h1>
                                           <p className="text-secondary">{this.state.email}</p>
+                                               {(this.state.current_user != this.props.match.params.id) && <Button
+                                                  variant="outline-primary"
+                                                  onClick={this.state.isFollowing ? this.unfollowUser.bind(this) : this.followUser.bind(this)}
+                                                >
+                                                  {this.state.isFollowing ? 'Unfollow' : 'Follow'}
+                                                </Button> }
+
                                       </div>
                       </div>
                     </div>
@@ -98,8 +167,15 @@ export class Profile extends Component{
                           <NavItem>
                             <NavLink
                                 href="#"
-                                onClick={this.showFriends.bind(this)}>
-                                Friends
+                                onClick={this.showFollowing.bind(this)}>
+                                {this.state.followed_amount+' Following'}
+                            </NavLink>
+                          </NavItem>
+                          <NavItem>
+                            <NavLink
+                                href="#"
+                                onClick={this.showFollowers.bind(this)}>
+                                {this.state.followers_amount+' Followers'}
                             </NavLink>
                           </NavItem>
                         </Nav>
@@ -107,7 +183,8 @@ export class Profile extends Component{
             {this.state.postsFlag ? <Posts id ={this.props.match.params.id}/> : <br/>}
             {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)}
                     updatePic={this.updateMenuPic.bind(this)} /> : <br/>}
-            {/*{this.state.friendsFlag && <Friends id ={this.state.user_id}/>}*/}
+                {this.state.followersFlag  ? <Users id ={this.props.match.params.id} type={1} flag={this.state.isFollowing}/> : <br/>}
+                {this.state.followingFlag  ? <Users id ={this.props.match.params.id} type={2} flag={this.state.isFollowing}/> : <br/>}
 
             </div>
 

@@ -22,7 +22,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
-    travels = db.relationship('Travel', backref='traveler', lazy=True)
+    travels = db.relationship('Travel', backref='traveler', lazy='dynamic')
     followed = db.relationship('Follow', foreign_keys=[Follow.follower_id], backref=db.backref('follower', lazy='joined'),
                                lazy='dynamic', cascade='all, delete-orphan')
     followers = db.relationship('Follow',
@@ -58,10 +58,10 @@ class User(db.Model, UserMixin):
         return self.followers.filter_by(
             follower_id=user.id).first() is not None
 
-    @property
-    def followed_posts(self):
-        return Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
-            .filter(Follow.follower_id == self.id)
+    # @property
+    # def followed_posts(self):
+    #     return Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
+    #         .filter(Follow.follower_id == self.id)
 
 
 class Travel(db.Model):

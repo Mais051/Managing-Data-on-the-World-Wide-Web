@@ -59,7 +59,7 @@ def get_user_posts():
         abort(400)
 
     user = User.query.get_or_404(user_id)
-    posts = Travel.query.filter_by(traveler=user).order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
+    posts = user.travels.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
     res = []
     image_file = url_for('static', filename='profile_pics/' + user.image_file)
 
@@ -68,10 +68,9 @@ def get_user_posts():
                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
                        'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file })
-    all_posts = Travel.query.filter_by(traveler=user).all()
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result, 'length': len(all_posts)})
+    return jsonify({'posts': result, 'length': len(user.travels.all())})
 
 
 @app.route("/user/<string:name>", methods=['GET'])
@@ -167,7 +166,7 @@ def get_posts(page):
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file':image_file})
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts)})
@@ -234,11 +233,6 @@ def login():
     if user and bcrypt.check_password_hash(user.password, user_data['password']):
         login_user(user, remember=True)
         access_token = create_access_token(identity={'id': user.id})
-        # access_token = create_access_token(identity={'id': user.id, 'username': user.username,
-        #                                              'first_name': user.first_name,
-        #                                              'last_name': user.last_name, 'email': user.email,
-        #                                              'birth_date': user.birth_date, 'gender': user.gender,
-        #                                              'image_file': user.image_file})
         result = access_token
     else:
         abort(400)
@@ -333,3 +327,25 @@ def is_following_me(user_id):
     if user.is_following(current_user):
         return 'True'
     return 'False'
+
+#posts written by current user and the people he follows only
+@app.route('/followed_posts/page/<int:page>', methods=['GET'])
+@login_required
+def followed_posts(page):
+    res = []
+    followed_users_posts = Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
+        .filter(Follow.follower_id == current_user.id)
+    user_posts = current_user.travels
+    all_posts = user_posts.union(followed_users_posts).order_by(Travel.date_posted.desc())
+    posts = all_posts.paginate(page=page, per_page=5)
+    for post in posts.items:
+        image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
+        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
+                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
+                    'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
+
+    result = sorted(res, key=lambda d: d['id'], reverse=True)
+    return jsonify({'posts': result, 'length': len(all_posts.all())})
+
+

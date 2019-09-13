@@ -15,7 +15,8 @@ export class Users extends Component{
     }
 
     componentDidMount() {
-        this.refresh_users(this.state.current_page);
+        this.refresh_users(1);
+        this.setState({current_page:1});
     }
 
     refresh_users(page){
@@ -87,6 +88,7 @@ export class Users extends Component{
                       subContainerClassName={'pages pagination'}
                       disabledClassName={'disabled'}
                       activeClassName={'active'}
+                      forcePage={this.state.current_page - 1}
                     />
              </div>
          )

@@ -10,6 +10,7 @@ import ModalFooter from "reactstrap/es/ModalFooter";
 import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
 import ReactPaginate from 'react-paginate';
+import {Nav, NavItem, NavLink} from "reactstrap";
 
 const validIntRegex =
   RegExp(/^[0-9\b]+$/);
@@ -141,7 +142,8 @@ export class Posts extends Component {
                   zip: 'This field is required',
                   content: 'This field is required',
                   title: 'This field is required'
-              }
+              },
+            postsFollowed:true
         }
         this.onChange = this.onChange.bind(this)
     }
@@ -150,7 +152,7 @@ export class Posts extends Component {
         const token = localStorage.usertoken;
         const decoded = jwt_decode(token);
         this.setState({current_user: decoded.identity.id});
-        this._refreshPosts(this.state.current_page);
+        this._refreshPosts(this.state.current_page,this.state.postsFollowed);
     }
 
     componentDidUpdate (prevProps) {
@@ -248,14 +250,28 @@ export class Posts extends Component {
         }
   }
 
+  showFollowedUsers(e){
+        e.preventDefault()
+        this.setState({postsFollowed: true, current_page:1});
+        this._refreshPosts(1,true)
+  }
+
+  showAllUsers(e){
+        e.preventDefault()
+        this.setState({postsFollowed: false,current_page:1});
+        this._refreshPosts(1,false)
+
+  }
+
   deletePost(){
          axios.defaults.withCredentials = true;
     axios.delete('http://127.0.0.1:5000/posts/'+this.state.postToDelete)
         .then((response) => {
-            this._refreshPosts(1);
+            this._refreshPosts(1,this.state.postsFollowed);
 
       this.setState({
-      deletePostModal: false
+      deletePostModal: false,
+          current_page:1
     });
     })
 
@@ -275,7 +291,7 @@ export class Posts extends Component {
                 title: this.state.title
             })
                 .then((response) => {
-                    this._refreshPosts(this.state.current_page);
+                    this._refreshPosts(this.state.current_page,this.state.postsFollowed);
                     this.setState({
                         start_date: '',
                         end_date: '',
@@ -316,7 +332,7 @@ export class Posts extends Component {
                 title: this.state.title
             })
                 .then((response) => {
-                    this._refreshPosts(1);
+                    this._refreshPosts(1,this.state.postsFollowed);
                     this.setState({
                         start_date: '',
                         end_date: '',
@@ -327,6 +343,7 @@ export class Posts extends Component {
                         title: '',
                         postToUpdate: 0,
                         postToDelete: 0,
+                        current_page:1
                     });
 
                     this.setState({
@@ -343,17 +360,30 @@ export class Posts extends Component {
         }
   }
 
-    _refreshPosts(page) {
+    _refreshPosts(page,flag) {
         if (!this.props.id) {
-             axios.defaults.withCredentials = true;
-            axios.get('http://127.0.0.1:5000/posts/page/' + page).then((response) => {
-                this.setState({
-                    posts: response.data.posts,
-                    amount_of_posts: response.data.length
-                })
-            }).catch(err => {
-                console.log(err)
-            });
+            if (!flag) {
+                axios.defaults.withCredentials = true;
+                axios.get('http://127.0.0.1:5000/posts/page/' + page).then((response) => {
+                    this.setState({
+                        posts: response.data.posts,
+                        amount_of_posts: response.data.length
+                    })
+                }).catch(err => {
+                    console.log(err)
+                });
+            }
+            else {
+                    axios.defaults.withCredentials = true;
+                    axios.get('http://127.0.0.1:5000/followed_posts/page/' + page).then((response) => {
+                        this.setState({
+                            posts: response.data.posts,
+                            amount_of_posts: response.data.length
+                        })
+                    }).catch(err => {
+                        console.log(err)
+                    });
+                }
         }
         else{
              axios.defaults.withCredentials = true;
@@ -373,7 +403,7 @@ export class Posts extends Component {
           this.setState({
                 current_page: new_page
             });
-        this._refreshPosts(new_page);
+        this._refreshPosts(new_page,this.state.postsFollowed);
   };
     isPostMine(post){
         const token = localStorage.usertoken
@@ -462,6 +492,29 @@ export class Posts extends Component {
              <div>
                  <p className="m-md-4" align="center">
                         {(!this.props.id || this.props.id == this.state.current_user) &&<Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>}
+                     {!this.props.id &&  <Nav tabs>
+                          <NavItem>
+                              <NavLink
+                                href="#"
+                                disabled={true}
+                                onClick={null}>
+                                Show posts from:
+                            </NavLink>
+                          </NavItem>
+                         <NavItem>
+                            <NavLink
+                                href="#"
+                                onClick={this.showFollowedUsers.bind(this)}>Followed Users
+                            </NavLink>
+                          </NavItem>
+                          <NavItem>
+                            <NavLink
+                                href="#"
+                                onClick= {this.showAllUsers.bind(this)}>
+                                All Users
+                            </NavLink>
+                          </NavItem>
+                        </Nav>}
                     </p>
                 {posts}
 
@@ -476,6 +529,7 @@ export class Posts extends Component {
                       subContainerClassName={'pages pagination'}
                       disabledClassName={'disabled'}
                       activeClassName={'active'}
+                      forcePage={this.state.current_page - 1}
                     />
                  <Modal isOpen={this.state.deletePostModal} toggle={this.toggleDeletePostModal.bind(this)}>
                             <ModalHeader toggle={this.toggleDeletePostModal.bind(this)}>Delete Post</ModalHeader>

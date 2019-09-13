@@ -193,7 +193,7 @@ export class Profile extends Component{
                           </NavItem>
                         </Nav>
 
-            {this.state.postsFlag ? <Posts id ={this.props.match.params.id}/> : <br/>}
+            {this.state.postsFlag ? <Posts id ={this.props.match.params.id} flag={this.state.isFollowing}/> : <br/>}
             {this.state.aboutFlag ? <About id ={this.props.match.params.id} updateInfo={this.updateMenuInfo.bind(this)}
                     updatePic={this.updateMenuPic.bind(this)} /> : <br/>}
                 {this.state.followersFlag  ? <Users id ={this.props.match.params.id} type={1} flag={this.state.isFollowing}/> : <br/>}

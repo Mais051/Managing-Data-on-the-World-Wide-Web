@@ -323,3 +323,13 @@ def is_following(user_id):
     if current_user.is_following(user):
         return 'True'
     return 'False'
+
+
+@app.route('/is_following_me/<int:user_id>', methods=['GET'])
+@login_required
+def is_following_me(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if user.is_following(current_user):
+        return 'True'
+    return 'False'

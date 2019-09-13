@@ -8,6 +8,7 @@ import {Users} from "./Users";
 
 import Button from "react-bootstrap/Button";
 import jwt_decode from "jwt-decode";
+import Badge from "react-bootstrap/Badge";
 
 export class Profile extends Component{
     state={
@@ -19,6 +20,7 @@ export class Profile extends Component{
         followingFlag:0,
         followersFlag:0,
         isFollowing: false,
+        isFollowingMe: false,
         current_user:0,
         followers_amount:0,
         followed_amount:0
@@ -82,6 +84,16 @@ export class Profile extends Component{
                 console.log(err)
             });
 
+         axios.defaults.withCredentials = true;
+         axios.get('http://127.0.0.1:5000/is_following_me/' + this.props.match.params.id).then((response) => {
+             const res = ( response.data == 'True') ? true : false;
+                this.setState({
+                   isFollowingMe: res
+                })
+            }).catch(err => {
+                console.log(err)
+            });
+
   }
    componentDidUpdate (prevProps) {
        if (prevProps.location.pathname !== this.props.location.pathname) {
@@ -137,7 +149,8 @@ export class Profile extends Component{
                                                height="200" width="200"
                                           />
                                           <h1 className="account-heading">{this.state.username}</h1>
-                                          <p className="text-secondary">{this.state.email}</p>
+                                          <p className="text-secondary">{this.state.email}   {(this.state.current_user != this.props.match.params.id) && this.state.isFollowingMe &&
+                                                   <h5><Badge pill variant="secondary">Follows you</Badge></h5>}</p>
                                                {(this.state.current_user != this.props.match.params.id) && <Button
                                                   variant="outline-primary"
                                                   onClick={this.state.isFollowing ? this.unfollowUser.bind(this) : this.followUser.bind(this)}

@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import axios from "axios";
 import ReactPaginate from "react-paginate";
+import moment from "moment";
+import {Link} from "react-router-dom";
 
 export class Users extends Component{
     constructor() {
@@ -55,18 +57,14 @@ export class Users extends Component{
     render(){
          let users =  this.state.users.map((user) => {
             return (
-                <div>
-
-                    <div className="card text-center"  class="col-sm-6 mx-auto align-content-center">
-                        <div className="card-header">
-                             <img  className="rounded-circle account-img"
+                <div className="col-md-24 mx-auto">
+              <tr>
+                    <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
+                <td><img  className="rounded-circle account-img"
                                                src={"http://127.0.0.1:5000" + user.image_file}
                                                height="60" width="60"
-                            />
-                             <a href={"/users/"+user.id}>{'     '+user.username}</a>
-                        </div><br/>
-
-                    </div>
+                            />  <a href={"/users/"+user.id}>{'     '+user.username}</a></td>
+              </tr>
                 </div>
 
             );
@@ -74,7 +72,10 @@ export class Users extends Component{
 
          return (
              <div>
-                 {users}
+                 <table className="table col-md-6 mx-auto">
+                    <tbody> {users}</tbody>
+                 </table>
+
                   <ReactPaginate
                       breakLabel={'...'}
                       breakClassName={'break-me'}

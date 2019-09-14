@@ -5,12 +5,13 @@ import moment from "moment";
 import Modal from "reactstrap/es/Modal";
 import ModalBody from "reactstrap/es/ModalBody";
 import ModalHeader from "reactstrap/es/ModalHeader";
-import Button from "reactstrap/es/Button";
+import Button from "react-bootstrap/Button";
 import ModalFooter from "reactstrap/es/ModalFooter";
 import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
 import ReactPaginate from 'react-paginate';
 import {Nav, NavItem, NavLink} from "reactstrap";
+import {Link} from "react-router-dom";
 
 const validIntRegex =
   RegExp(/^[0-9\b]+$/);
@@ -502,17 +503,16 @@ export class Posts extends Component {
                             </NavLink>
                           </NavItem>
                          <NavItem>
-                            <NavLink
-                                href="#"
-                                onClick={this.showFollowedUsers.bind(this)}>Followed Users
-                            </NavLink>
+                            <Button variant="outline-primary"
+                                     disabled={this.state.postsFollowed}
+                                    onClick={this.showFollowedUsers.bind(this)}>Followed Users </Button>
                           </NavItem>
+                         <h4>&nbsp;</h4>
                           <NavItem>
-                            <NavLink
-                                href="#"
-                                onClick= {this.showAllUsers.bind(this)}>
-                                All Users
-                            </NavLink>
+
+                            <Button variant="outline-primary"
+                                    disabled={!this.state.postsFollowed}
+                                    onClick={this.showAllUsers.bind(this)}>All Users </Button>
                           </NavItem>
                         </Nav>}
                     </p>

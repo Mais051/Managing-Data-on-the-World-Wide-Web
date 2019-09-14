@@ -477,9 +477,9 @@ export class Posts extends Component {
                             <p className="card-text"><b>City:</b> {post.city}</p>
                             <p className="card-text"><b>Zip:</b> {post.zip}</p>
                             <p className="card-text">{post.content}</p>
-                            {this.isPostMine(post) && <Button className="my-3" color="secondary" onClick={this.toggleUpdatePostModal.bind(this,post)}>Update</Button>}
+                            {this.isPostMine(post) && <Button className="my-3" variant="secondary" onClick={this.toggleUpdatePostModal.bind(this,post)}>Update</Button>}
                             <a> </a>
-                            {this.isPostMine(post) && <Button className="my-3" color="danger" onClick={this.toggleDeletePostModal.bind(this,post)}>Delete</Button>}
+                            {this.isPostMine(post) && <Button className="my-3" variant="danger" onClick={this.toggleDeletePostModal.bind(this,post)}>Delete</Button>}
                         </div>
                         <div className="card-footer text-muted">
                             Posted on {post.date_posted} </div>
@@ -492,7 +492,7 @@ export class Posts extends Component {
         return (
              <div>
                  <p className="m-md-4" align="center">
-                        {(!this.props.id || this.props.id == this.state.current_user) &&<Button className="my-3" color="primary" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>}
+                        {(!this.props.id || this.props.id == this.state.current_user) &&<Button className="my-3" variant="dark" onClick={this.toggleNewPostModal.bind(this)}>Add Post</Button>}
                      {!this.props.id &&  <Nav tabs>
                           <NavItem>
                               <NavLink
@@ -536,8 +536,8 @@ export class Posts extends Component {
                             <ModalBody> Are you sure you want to delete this post?
                             </ModalBody>
                             <ModalFooter>
-                                <Button color="primary" onClick={this.deletePost.bind(this)}>Yes</Button>{' '}
-                                <Button color="secondary" onClick={this.toggleDeletePostModal.bind(this)}>Cancel</Button>
+                                <Button variant="primary" onClick={this.deletePost.bind(this)}>Yes</Button>{' '}
+                                <Button variant="secondary" onClick={this.toggleDeletePostModal.bind(this)}>Cancel</Button>
                             </ModalFooter>
                         </Modal>
 
@@ -563,8 +563,8 @@ export class Posts extends Component {
                              />
                         </ModalBody>
                         <ModalFooter>
-                            <Button color="primary" onClick={this.updatePost.bind(this)}>Update Post</Button>{' '}
-                            <Button color="secondary" onClick={this.toggleUpdatePostModal.bind(this)}>Cancel</Button>
+                            <Button variant="primary" onClick={this.updatePost.bind(this)}>Update Post</Button>{' '}
+                            <Button variant="secondary" onClick={this.toggleUpdatePostModal.bind(this)}>Cancel</Button>
                         </ModalFooter>
                     </Modal>
 
@@ -590,8 +590,8 @@ export class Posts extends Component {
                              />
                         </ModalBody>
                         <ModalFooter>
-                            <Button color="primary" onClick={this.addPost.bind(this)}>Add Post</Button>{' '}
-                            <Button color="secondary" onClick={this.toggleNewPostModal.bind(this)}>Cancel</Button>
+                            <Button variant="primary" onClick={this.addPost.bind(this)}>Add Post</Button>{' '}
+                            <Button variant="secondary" onClick={this.toggleNewPostModal.bind(this)}>Cancel</Button>
                         </ModalFooter>
                     </Modal>
             </div>

@@ -83,21 +83,10 @@ function PostForm(props){
                 onChange={props.onChange}
                 noValidate
             />
-                {props.errors.city.length > 0 &&
-                <span className='error'>{props.errors.city}</span>}
-                <br/>
-            <label htmlFor="name">Zip</label>
-            <input
-                type="text"
-                className="form-control"
-                name="zip"
-                placeholder="Enter zip code"
-                value={props.zip}
-                onChange={props.onChange}
-                noValidate
-            />
-                {props.errors.zip.length > 0 &&
-                <span className='error'>{props.errors.zip}</span>}
+             {props.errors.city.length > 0 ?
+                <span className='error'>{props.errors.city}</span> :
+                props.location_invalid > 0 ?
+                        <span className='error'>This location is invalid</span> : <p/>}
                 <br/>
             <label htmlFor="name">Content</label>
             <textarea
@@ -127,7 +116,6 @@ export class Posts extends Component {
             end_date: '',
             country: '',
             city: '',
-            zip: '',
             content: '',
             title: '',
             invalid: 0,
@@ -140,11 +128,11 @@ export class Posts extends Component {
               errors: {
                   country: 'This field is required',
                   city: 'This field is required',
-                  zip: 'This field is required',
                   content: 'This field is required',
-                  title: 'This field is required'
+                  title: 'This field is required',
               },
-            postsFollowed:true
+            postsFollowed:true,
+            location_invalid:0
         }
         this.onChange = this.onChange.bind(this)
     }
@@ -175,10 +163,10 @@ export class Posts extends Component {
     this.setState({
       newPostModal: ! this.state.newPostModal,
         invalid: 0,
+        location_invalid: 0,
          errors: {
                   country: 'This field is required',
                   city: 'This field is required',
-                  zip: 'This field is required',
                   content: 'This field is required',
                   title: 'This field is required'
               }
@@ -187,7 +175,6 @@ export class Posts extends Component {
          start_date: new Date(),
           end_date: new Date(),
           country:'',
-          zip:'',
           city:'',
           content:'',
           title: '',
@@ -212,17 +199,16 @@ export class Posts extends Component {
             this.setState({
                 postToUpdate: post.id,
                 country: post.country,
-                zip: post.zip,
                 city: post.city,
                 content: post.content,
                 start_date: new Date(post.start_date),
                 end_date: new Date(post.end_date),
                 title: post.title,
                 invalid: 0,
+                location_invalid: 0,
                 errors: {
                   country: '',
                   city: '',
-                  zip: '',
                   content: '',
                   title: ''
               }
@@ -233,17 +219,16 @@ export class Posts extends Component {
                           start_date: '',
                           end_date: '',
                           country:'',
-                          zip:'',
                           city:'',
                           content:'',
                           title: '',
                           postToUpdate: 0,
                           postToDelete: 0,
                             invalid : 0,
+                            location_invalid: 0,
                             errors: {
                               country: '',
                                 city: '',
-                                zip: '',
                                 content: '',
                                 title: ''
                           }
@@ -278,7 +263,7 @@ export class Posts extends Component {
 
   }
      updatePost() {
-        this.setState({invalid: 0});
+        this.setState({invalid: 0,location_invalid:0});
 
         if (validateForm(this.state.errors)) {
             axios.defaults.withCredentials = true;
@@ -287,27 +272,30 @@ export class Posts extends Component {
                 end_date: this.state.end_date,
                 country: this.state.country,
                 city: this.state.city,
-                zip: this.state.zip,
                 content: this.state.content,
                 title: this.state.title
             })
                 .then((response) => {
-                    this._refreshPosts(this.state.current_page,this.state.postsFollowed);
-                    this.setState({
-                        start_date: '',
-                        end_date: '',
-                        country: '',
-                        zip: '',
-                        city: '',
-                        content: '',
-                        title: '',
-                        postToUpdate: 0,
-                        postToDelete: 0,
-                    });
+                    if (response.data=='Updated') {
+                        this._refreshPosts(this.state.current_page, this.state.postsFollowed);
+                        this.setState({
+                            start_date: '',
+                            end_date: '',
+                            country: '',
+                            city: '',
+                            content: '',
+                            title: '',
+                            postToUpdate: 0,
+                            postToDelete: 0,
+                        });
 
-                    this.setState({
-                        updatePostModal: false
-                    });
+                        this.setState({
+                            updatePostModal: false
+                        });
+                    }
+                    else{
+                        this.setState({invalid:1, location_invalid:1});
+                    }
                 })
                 .catch(err => {
                     console.log(err)
@@ -320,6 +308,7 @@ export class Posts extends Component {
     }
    addPost() {
         this.setState({invalid: 0});
+        this.setState({location_invalid: 0});
 
         if (validateForm(this.state.errors)) {
             axios.defaults.withCredentials = true;
@@ -328,28 +317,31 @@ export class Posts extends Component {
                 end_date: this.state.end_date,
                 country: this.state.country,
                 city: this.state.city,
-                zip: this.state.zip,
                 content: this.state.content,
                 title: this.state.title
             })
                 .then((response) => {
-                    this._refreshPosts(1,this.state.postsFollowed);
-                    this.setState({
-                        start_date: '',
-                        end_date: '',
-                        country: '',
-                        zip: '',
-                        city: '',
-                        content: '',
-                        title: '',
-                        postToUpdate: 0,
-                        postToDelete: 0,
-                        current_page:1
-                    });
+                    if (response.data=='Created') {
+                        this._refreshPosts(1, this.state.postsFollowed);
+                        this.setState({
+                            start_date: '',
+                            end_date: '',
+                            country: '',
+                            city: '',
+                            content: '',
+                            title: '',
+                            postToUpdate: 0,
+                            postToDelete: 0,
+                            current_page: 1
+                        });
+                          this.setState({newPostModal: false});
+                    }
+                    else{
+                        this.setState({invalid: 1});
+                        this.setState({location_invalid: 1});
 
-                    this.setState({
-                        newPostModal: false
-                    });
+                    }
+
                 })
                 .catch(err => {
                     console.log(err)
@@ -424,12 +416,6 @@ export class Posts extends Component {
                     ? 'This field is required'
                     : '';
                 break;
-            case 'zip':
-                errors.zip =
-                  validIntRegex.test(value)  && value.length >=1
-                    ? ''
-                    : 'Zip code must be a valid number';
-                break;
               case 'country':
                 errors.country =
                   value.length < 1
@@ -475,7 +461,6 @@ export class Posts extends Component {
                             <p className="card-text"><b>End Date:</b> {moment(post.end_date).format("LL")}</p>
                             <p className="card-text"><b>Country:</b> {post.country}</p>
                             <p className="card-text"><b>City:</b> {post.city}</p>
-                            <p className="card-text"><b>Zip:</b> {post.zip}</p>
                             <p className="card-text">{post.content}</p>
                             {this.isPostMine(post) && <Button className="my-3" variant="secondary" onClick={this.toggleUpdatePostModal.bind(this,post)}>Update</Button>}
                             <a> </a>
@@ -557,9 +542,9 @@ export class Posts extends Component {
                                  start_date={this.state.start_date}
                                  end_date={this.state.end_date}
                                  country={this.state.country}
-                                 zip={this.state.zip}
                                  city={this.state.city}
                                  errors={this.state.errors}
+                                 location_invalid={this.state.location_invalid}
                              />
                         </ModalBody>
                         <ModalFooter>
@@ -584,9 +569,9 @@ export class Posts extends Component {
                                  start_date={this.state.start_date}
                                  end_date={this.state.end_date}
                                  country={this.state.country}
-                                 zip={this.state.zip}
                                  city={this.state.city}
                                  errors={this.state.errors}
+                                 location_invalid={this.state.location_invalid}
                              />
                         </ModalBody>
                         <ModalFooter>

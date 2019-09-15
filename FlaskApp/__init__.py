@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_cors import CORS
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -15,6 +16,7 @@ app.debug = True
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
+geolocator = Nominatim(user_agent="FlaskApp")
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'

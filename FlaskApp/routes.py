@@ -2,7 +2,7 @@ import os
 import secrets
 from PIL import Image
 from flask import url_for, request, abort, jsonify, make_response
-from FlaskApp import app, db, bcrypt, login_manager
+from FlaskApp import app, db, bcrypt, login_manager, geolocator
 from FlaskApp.models import User, Travel, Follow
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
@@ -66,7 +66,7 @@ def get_user_posts():
     for post in posts.items:
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                       'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
+                    'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file })
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
@@ -150,7 +150,7 @@ def travel(travel_id):
     image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
 
     return jsonify({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                    'end_date': post.end_date, 'country': post.country, 'city': post.city, 'zip': post.zip,
+                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'content': post.content, 'username': post.traveler.username, 'user_id': post.traveler.id,
                     'id': post.id, 'image_file': image_file})
 
@@ -165,7 +165,7 @@ def get_posts(page):
         image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                    'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
+                   'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
@@ -177,14 +177,18 @@ def get_posts(page):
 def new_travel():
     data = request.get_json()
     if not data or not 'start_date' in data or not 'end_date' in data or not 'country' in data \
-            or not 'city' in data or not 'zip' in data or not 'content' in data or not 'title' in data:
+            or not 'city' in data or not 'content' in data or not 'title' in data:
         abort(400)
+
+    location = geolocator.geocode(data['city'] + ' '+data['country'])
+    if location is None:
+        return 'Bad Location'
     travel = Travel(start_date=data['start_date'], end_date=data['end_date'], country=data['country'],
-                    city=data['city'], zip=data['zip'], content=data['content'], traveler=current_user,
+                    city=data['city'], latitude=location.latitude, longitude=location.longitude, content=data['content'], traveler=current_user,
                     title=data['title'])
     db.session.add(travel)
     db.session.commit()
-    return 'Created', 201
+    return 'Created'
 
 
 @app.route("/posts/<int:travel_id>", methods=['PUT'])
@@ -196,18 +200,23 @@ def update_travel(travel_id):
         abort(403)
 
     if not data or not 'start_date' in data or not 'end_date' in data or not 'country' in data \
-            or not 'city' in data or not 'zip' in data or not 'content' in data:
+            or not 'city' in data or not 'content' in data:
         abort(400)
+
+    location = geolocator.geocode(data['city']+' '+data['country'])
+    if location is None:
+        return 'Bad Location'
 
     post.start_date = data['start_date']
     post.end_date = data['end_date']
     post.country = data['country']
     post.city = data['city']
-    post.zip = data['zip']
+    post.latitude = location.latitude
+    post.longitude = location.longitude
     post.content = data['content']
     post.title = data['title']
     db.session.commit()
-    return 'Updated', 201
+    return 'Updated'
 
 
 @app.route("/posts/<int:travel_id>", methods=['DELETE'])
@@ -342,7 +351,7 @@ def followed_posts(page):
         image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                    'zip': post.zip, 'content': post.content, 'username': post.traveler.username,
+                   'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)

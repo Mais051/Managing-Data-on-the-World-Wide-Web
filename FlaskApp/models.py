@@ -73,7 +73,8 @@ class Travel(db.Model):
     end_date = db.Column(db.DateTime, nullable=False)
     country = db.Column(db.Text, nullable=False)
     city = db.Column(db.Text, nullable=False)
-    zip = db.Column(db.Integer, nullable=False)
+    latitude = db.Column(db.Integer, nullable=False)
+    longitude = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
 
     def __repr__(self):

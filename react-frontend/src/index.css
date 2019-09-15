@@ -60,4 +60,7 @@ ul.nav.nav-tabs {
     flex-wrap: wrap;
     padding: 10px;
 }
-
+ .leaflet-container {
+   height: 400px;
+   width: 800px;
+ }

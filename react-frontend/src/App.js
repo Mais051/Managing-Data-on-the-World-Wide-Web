@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import Navbar from './Component/Navbar'
 import Landing from './Component/Landing'
+import Map from './Component/Map'
 import Login from './Component/Login'
 import Register from './Component/Register'
 import Profile from './Component/Profile'
@@ -48,6 +49,11 @@ class App extends Component {
             <Route exact path="/profile/:id" render={(props) => (
                 isLoggedIn() ? (
                     <Profile {...props} />) : (<Redirect to="/login"/> )
+            )}/>
+
+            <Route exact path="/map" render={(props) => (
+                isLoggedIn() ? (
+                    <Map {...props} />) : (<Redirect to="/login"/> )
             )}/>
           </div>
         </div>

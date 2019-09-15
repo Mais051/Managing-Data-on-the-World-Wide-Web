@@ -1,3 +1,4 @@
+import datetime
 import os
 import secrets
 from PIL import Image
@@ -356,5 +357,36 @@ def followed_posts(page):
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts.all())})
+
+
+@app.route('/followed_posts', methods=['PUT'])
+@login_required
+def followed_posts_date_range():
+    res = []
+    user_data = request.get_json()
+    start_date_arg = user_data['start_date']
+    end_date_arg = user_data['end_date']
+    country = user_data['country']
+    city = user_data['city']
+
+    location = geolocator.geocode(city + ' ' + country)
+    if location is None:
+        return 'Bad Location'
+
+    followed_users_posts = Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
+        .filter(Follow.follower_id == current_user.id)
+    user_posts = current_user.travels
+    all_posts = user_posts.union(followed_users_posts).filter(Travel.start_date <= end_date_arg)\
+        .filter(Travel.end_date >= start_date_arg).order_by(Travel.date_posted.desc())
+
+    for post in all_posts:
+        image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
+        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
+                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
+                   'content': post.content, 'username': post.traveler.username,
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
+
+    result = sorted(res, key=lambda d: d['id'], reverse=True)
+    return jsonify({'posts': result, 'latitude': location.latitude, 'longitude': location.longitude})
 
 

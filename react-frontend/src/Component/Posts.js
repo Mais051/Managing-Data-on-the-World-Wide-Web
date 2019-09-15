@@ -300,7 +300,7 @@ export class Posts extends Component {
                 .catch(err => {
                     console.log(err)
                     this.setState({invalid: 1});
-                });;
+                });
         }
         else{
             this.setState({invalid: 1});

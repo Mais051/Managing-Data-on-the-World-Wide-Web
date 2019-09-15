@@ -84,9 +84,14 @@ class Navbar extends Component {
         </li>
         <li className="nav-item">
           <Link to={"/users/"+this.state.current_user} className="nav-link">
-            User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            User
           </Link>
         </li>
+          <li className="nav-item">
+           <Link to={"/map"} className="nav-link">
+            Find Partners&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </Link>
+          </li>
                 <Form inline onSubmit={e => { e.preventDefault(); this.get_user() }}>
               <FormControl type="text" placeholder={this.state.search_msg} onChange={this.onChange.bind(this)}
                 value={this.state.username} className="mr-md-1"/>

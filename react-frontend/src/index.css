@@ -62,5 +62,22 @@ ul.nav.nav-tabs {
 }
  .leaflet-container {
    height: 400px;
-   width: 800px;
+   width: 600px;
  }
+
+ #wrapper {
+    overflow: hidden;
+    width: 90%;
+    padding: 1px;
+}
+.left {
+    display: inline-block;
+    float: left;
+    width: 20%;
+   text-align: center;
+}
+.right {
+    display: inline-block;
+      float: right;
+    width: 80%;
+}

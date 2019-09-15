@@ -384,7 +384,8 @@ def followed_posts_date_range():
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
                    'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file,
+                    'longitude': post.longitude, 'latitude': post.latitude})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'latitude': location.latitude, 'longitude': location.longitude})

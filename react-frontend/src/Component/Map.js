@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import ModalBody from "reactstrap/es/ModalBody";
 import Button from "react-bootstrap/Button";
 import ModalFooter from "reactstrap/es/ModalFooter";
+import moment from "moment";
 
 const validateForm = (errors) => {
   let valid = true;
@@ -89,8 +90,8 @@ function SearchForm(props) {
             },
             invalid: 0,
             location_invalid: 0,
-            lat: 0,
-            long: 0
+            lat: 35.0015196,
+            long: 30.8760272
 
         }
         this.onChange = this.onChange.bind(this)
@@ -155,12 +156,13 @@ function SearchForm(props) {
              }
              else{
                  this.setState({
-                     posts:res.data.posts,
+                     posts: res.data.posts,
                      map_flag: true,
                      lat: res.data.latitude,
                      long: res.data.longitude
                  })
              }
+             console.log(res.data.posts);
          }) .catch(err => {
                     console.log(err)
                     this.setState({invalid: 1});
@@ -172,9 +174,34 @@ function SearchForm(props) {
   }
 
   render() {
+          let posts =  this.state.posts.map((post,idx) => {
+            return (
+                <Marker key={`marker-${idx}`} position={[post.latitude, post.longitude]}>
+                  <Popup>
+                      <div className="card text-center">
+                        <div className="card-header">
+                             <img  className="rounded-circle account-img"
+                                               src={"http://127.0.0.1:5000" + post.image_file}
+                                               height="60" width="60"
+                            />
+                             <a href={"/users/"+post.user_id}>{'     '+post.username}</a>
+                        </div>
+                        <div className="card-body">
+                            <h5 className="card-title"><b>{post.title}</b></h5>
+                            <p className="card-text"><b>Start Date:</b> {moment(post.start_date).format("LL")}</p>
+                            <p className="card-text"><b>End Date:</b> {moment(post.end_date).format("LL")}</p>
+                            <p className="card-text">{post.content}</p>
+                        </div>
+                    </div>
+                  </Popup>
+                </Marker>
+
+            );
+        });
     return (
-        <div className="col-md-10 mt-4 mx-auto"> <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css"/>
-            {!this.state.map_flag &&   <SearchForm
+        <div id="wrapper"> <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css"/>
+        <div class="right col-md-3 mt-4">
+                    <SearchForm
                                  onChange={this.onChange}
                                  handleChangeStart={this.handleChangeStart}
                                  handleChangeEnd={this.handleChangeEnd}
@@ -185,31 +212,30 @@ function SearchForm(props) {
                                  city={this.state.city}
                                  errors={this.state.errors}
                                  location_invalid={this.state.location_invalid}
-                             />}
-                              {!this.state.map_flag &&   <Button variant="primary" onClick={this.onSubmit.bind(this)}>Search</Button>}
-
-            {this.state.map_flag && <LeafletMap
-        center={[50, 10]}
-        zoom={6}
-        maxZoom={10}
-        attributionControl={true}
-        zoomControl={true}
-        doubleClickZoom={true}
-        scrollWheelZoom={true}
-        dragging={true}
-        animate={true}
-        easeLinearity={0.35}
-      >
-        <TileLayer
-          url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
-        />
-        <Marker position={[50, 10]}>
-          <Popup>
-            Popup for any custom information.
-          </Popup>
-        </Marker>
-      </LeafletMap>}
+                             />
+                         <Button variant="primary" onClick={this.onSubmit.bind(this)}>Search</Button>
         </div>
+           <div className="col-md-10 mt-4 mx-auto">
+            <LeafletMap
+                center={[this.state.lat, this.state.long]}
+                zoom={6}
+                maxZoom={10}
+                attributionControl={true}
+                zoomControl={true}
+                doubleClickZoom={true}
+                scrollWheelZoom={true}
+                dragging={true}
+                animate={true}
+                easeLinearity={0.35}
+                enableHighAccuracy={true}
+              >
+                <TileLayer
+                  url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+                />
+                {posts}
+              </LeafletMap>
+           </div>
+                </div>
     );
   }
 }

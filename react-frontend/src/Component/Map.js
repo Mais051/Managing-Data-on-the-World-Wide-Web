@@ -1,11 +1,8 @@
 import React, { Component } from 'react'
 import { Map as LeafletMap, TileLayer, Marker, Popup } from 'react-leaflet';
-import jwt_decode from "jwt-decode";
 import axios from "axios";
 import DatePicker from "react-datepicker";
-import ModalBody from "reactstrap/es/ModalBody";
 import Button from "react-bootstrap/Button";
-import ModalFooter from "reactstrap/es/ModalFooter";
 import moment from "moment";
 import Alert from "reactstrap/es/Alert";
 
@@ -22,7 +19,7 @@ function SearchForm(props) {
         <form noValidate onSubmit={props.onSubmit}>
 
             <div className="form-group">
-                <label htmlFor="name">Start date</label><br></br>
+                <label htmlFor="name"><b>Start date</b></label><br/>
                 <DatePicker
                     name="start_date"
                     selected={props.start_date}
@@ -32,7 +29,7 @@ function SearchForm(props) {
                 />
             </div>
             <div className="form-group">
-                <label htmlFor="name">End date</label><br></br>
+                <label htmlFor="name"><b>End date</b></label><br/>
                 <DatePicker
                     name="end_date"
                     selected={props.end_date}
@@ -41,7 +38,7 @@ function SearchForm(props) {
                     minDate={props.start_date}
                 />
             </div>
-            <label htmlFor="name">Country</label>
+            <label htmlFor="name"><b>Country</b></label>
             <input
                 type="text"
                 className="form-control"
@@ -54,7 +51,7 @@ function SearchForm(props) {
             {props.errors.country.length > 0 &&
             <span className='error'>{props.errors.country}</span>}
             <br/>
-            <label htmlFor="name">City</label>
+            <label htmlFor="name"><b>City</b></label>
             <input
                 type="text"
                 className="form-control"
@@ -68,6 +65,7 @@ function SearchForm(props) {
                 <span className='error'>{props.errors.city}</span> :
                 props.location_invalid > 0 ?
                     <span className='error'>This location is invalid<br/></span> : <p/>}
+                    <br/>
         </form>
     );
 }
@@ -198,7 +196,7 @@ function SearchForm(props) {
     return (
         <div id="wrapper"> <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css"/>
         <div class="right col-md-3 mt-4 mx-auto">
-            <h1 className="h3 mb-3 font-weight-normal">Find Partners</h1>
+            <h1 className="h3 mb-3 font-weight-normal"><b>Find Partners</b></h1>
               <div className="form-group">
                   {this.state.invalid >0 &&  <Alert color="danger">
                   Your search attempt is invalid. Please try again!

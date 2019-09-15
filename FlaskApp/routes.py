@@ -49,7 +49,8 @@ def get_user(user_id):
 
     return jsonify({'username': user.username, 'first_name': user.first_name, 'last_name': user.last_name,
                     'gender': user.gender, 'birth_date': user.birth_date, 'email': user.email,
-                    'image_file': image_file, 'followers': len(user.followers.all()), 'followed': len(user.followed.all())})
+                    'image_file': image_file, 'followers': len(user.followers.all()),
+                    'followed': len(user.followed.all())})
 
 
 @app.route("/users/posts", methods=['GET'])
@@ -66,9 +67,9 @@ def get_user_posts():
 
     for post in posts.items:
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                       'end_date': post.end_date, 'country': post.country, 'city': post.city,
+                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
                     'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file })
+                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(user.travels.all())})
@@ -166,7 +167,7 @@ def get_posts(page):
         image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                   'content': post.content, 'username': post.traveler.username,
+                    'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
@@ -181,11 +182,12 @@ def new_travel():
             or not 'city' in data or not 'content' in data or not 'title' in data:
         abort(400)
 
-    location = geolocator.geocode(data['city'] + ' '+data['country'])
+    location = geolocator.geocode(data['city'] + ' ' + data['country'])
     if location is None:
         return 'Bad Location'
     travel = Travel(start_date=data['start_date'], end_date=data['end_date'], country=data['country'],
-                    city=data['city'], latitude=location.latitude, longitude=location.longitude, content=data['content'], traveler=current_user,
+                    city=data['city'], latitude=location.latitude, longitude=location.longitude,
+                    content=data['content'], traveler=current_user,
                     title=data['title'])
     db.session.add(travel)
     db.session.commit()
@@ -204,7 +206,7 @@ def update_travel(travel_id):
             or not 'city' in data or not 'content' in data:
         abort(400)
 
-    location = geolocator.geocode(data['city']+' '+data['country'])
+    location = geolocator.geocode(data['city'] + ' ' + data['country'])
     if location is None:
         return 'Bad Location'
 
@@ -338,7 +340,8 @@ def is_following_me(user_id):
         return 'True'
     return 'False'
 
-#posts written by current user and the people he follows only
+
+# posts written by current user and the people he follows only
 @app.route('/followed_posts/page/<int:page>', methods=['GET'])
 @login_required
 def followed_posts(page):
@@ -352,11 +355,20 @@ def followed_posts(page):
         image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
         res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
                     'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                   'content': post.content, 'username': post.traveler.username,
+                    'content': post.content, 'username': post.traveler.username,
                     'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'length': len(all_posts.all())})
+
+
+def date_between(start_date, end_date, start_date_arg, end_date_arg):
+    start_date_arg_converted = datetime.datetime.strptime(start_date_arg.split('T')[0], '%Y-%m-%d').date()
+    end_date_arg_converted = datetime.datetime.strptime(end_date_arg.split('T')[0], '%Y-%m-%d').date()
+
+    if start_date.date() <= end_date_arg_converted:
+        return end_date.date() >= start_date_arg_converted
+    return False
 
 
 @app.route('/followed_posts', methods=['PUT'])
@@ -375,19 +387,16 @@ def followed_posts_date_range():
 
     followed_users_posts = Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
         .filter(Follow.follower_id == current_user.id)
-    user_posts = current_user.travels
-    all_posts = user_posts.union(followed_users_posts).filter(Travel.start_date <= end_date_arg)\
-        .filter(Travel.end_date >= start_date_arg).order_by(Travel.date_posted.desc())
+    all_posts = current_user.travels.union(followed_users_posts).order_by(Travel.date_posted.desc())
 
-    for post in all_posts:
-        image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
-        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                   'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file,
-                    'longitude': post.longitude, 'latitude': post.latitude})
+    for post in all_posts.all():
+        if date_between(post.start_date, post.end_date, start_date_arg, end_date_arg):
+            image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
+            res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
+                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
+                        'content': post.content, 'username': post.traveler.username,
+                        'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file,
+                        'longitude': post.longitude, 'latitude': post.latitude})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
     return jsonify({'posts': result, 'latitude': location.latitude, 'longitude': location.longitude})
-
-

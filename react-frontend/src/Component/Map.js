@@ -230,7 +230,7 @@ function SearchForm(props) {
                 dragging={true}
                 animate={true}
                 easeLinearity={0.35}
-                enableHighAccuracy={false}
+                enableHighAccuracy={true}
               >
                 <TileLayer
                   url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'

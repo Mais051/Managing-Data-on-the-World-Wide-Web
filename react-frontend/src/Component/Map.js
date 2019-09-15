@@ -7,6 +7,7 @@ import ModalBody from "reactstrap/es/ModalBody";
 import Button from "react-bootstrap/Button";
 import ModalFooter from "reactstrap/es/ModalFooter";
 import moment from "moment";
+import Alert from "reactstrap/es/Alert";
 
 const validateForm = (errors) => {
   let valid = true;
@@ -40,13 +41,12 @@ function SearchForm(props) {
                     minDate={props.start_date}
                 />
             </div>
-            <br/>
             <label htmlFor="name">Country</label>
             <input
                 type="text"
                 className="form-control"
                 name="country"
-                placeholder="Enter country name"
+                placeholder="Country"
                 value={props.country}
                 onChange={props.onChange}
                 noValidate
@@ -59,7 +59,7 @@ function SearchForm(props) {
                 type="text"
                 className="form-control"
                 name="city"
-                placeholder="Enter city name"
+                placeholder="City"
                 value={props.city}
                 onChange={props.onChange}
                 noValidate
@@ -67,8 +67,7 @@ function SearchForm(props) {
             {props.errors.city.length > 0 ?
                 <span className='error'>{props.errors.city}</span> :
                 props.location_invalid > 0 ?
-                    <span className='error'>This location is invalid</span> : <p/>}
-            <br/>
+                    <span className='error'>This location is invalid<br/></span> : <p/>}
         </form>
     );
 }
@@ -82,7 +81,6 @@ function SearchForm(props) {
             country: '',
             start_date: new Date(),
             end_date: new Date(),
-            map_flag: false,
             errors: {
                 country: 'This field is required',
                 city: 'This field is required'
@@ -150,14 +148,13 @@ function SearchForm(props) {
                           end_date: this.state.end_date
                         })
          .then(res => {
-             if (res == 'Bad Location'){
+             if (res.data == 'Bad Location'){
                  this.setState({location_invalid: 1});
                  this.setState({invalid: 1});
              }
              else{
                  this.setState({
                      posts: res.data.posts,
-                     map_flag: true,
                      lat: res.data.latitude,
                      long: res.data.longitude
                  })
@@ -200,7 +197,13 @@ function SearchForm(props) {
         });
     return (
         <div id="wrapper"> <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css"/>
-        <div class="right col-md-3 mt-4">
+        <div class="right col-md-3 mt-4 mx-auto">
+            <h1 className="h3 mb-3 font-weight-normal">Find Partners</h1>
+              <div className="form-group">
+                  {this.state.invalid >0 &&  <Alert color="danger">
+                  Your search attempt is invalid. Please try again!
+                </Alert> }
+              </div>
                     <SearchForm
                                  onChange={this.onChange}
                                  handleChangeStart={this.handleChangeStart}
@@ -215,7 +218,7 @@ function SearchForm(props) {
                              />
                          <Button variant="primary" onClick={this.onSubmit.bind(this)}>Search</Button>
         </div>
-           <div className="col-md-10 mt-4 mx-auto">
+           <div className="col-md-10 mt-4 mx-auto left">
             <LeafletMap
                 center={[this.state.lat, this.state.long]}
                 zoom={6}
@@ -227,7 +230,7 @@ function SearchForm(props) {
                 dragging={true}
                 animate={true}
                 easeLinearity={0.35}
-                enableHighAccuracy={true}
+                enableHighAccuracy={false}
               >
                 <TileLayer
                   url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'

@@ -376,14 +376,10 @@ def date_between(start_date, end_date, start_date_arg, end_date_arg):
 def followed_posts_date_range():
     res = []
     user_data = request.get_json()
+    if not 'start_date' in user_data or not 'end_date' in user_data:
+        abort(400)
     start_date_arg = user_data['start_date']
     end_date_arg = user_data['end_date']
-    country = user_data['country']
-    city = user_data['city']
-
-    location = geolocator.geocode(city + ' ' + country)
-    if location is None:
-        return 'Bad Location'
 
     followed_users_posts = Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
         .filter(Follow.follower_id == current_user.id)
@@ -399,4 +395,4 @@ def followed_posts_date_range():
                         'longitude': post.longitude, 'latitude': post.latitude})
 
     result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result, 'latitude': location.latitude, 'longitude': location.longitude})
+    return jsonify({'posts': result})

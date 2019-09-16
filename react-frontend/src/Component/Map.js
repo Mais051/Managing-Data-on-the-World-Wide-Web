@@ -1,21 +1,27 @@
 import React, { Component } from 'react'
-import { Map as LeafletMap, TileLayer, Marker, Popup, withLeaflet, MapControl } from 'react-leaflet';
+import {Map as LeafletMap, TileLayer, Marker, Popup, MapControl, withLeaflet} from 'react-leaflet';
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import Button from "react-bootstrap/Button";
 import moment from "moment";
 import Alert from "reactstrap/es/Alert";
+import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 
-import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
+class SearchMap extends MapControl {
 
-
-
-const validateForm = (errors) => {
-  let valid = true;
-  Object.values(errors).forEach(
-    (val) => val.length > 0 && (valid = false)
-  );
-  return valid;
+    createLeafletElement() {
+      return GeoSearchControl({
+        provider: new OpenStreetMapProvider(),
+        style: 'bar',
+        showMarker: false,
+        showPopup: false,
+        autoClose: true,
+        retainZoomLevel: true,
+        animateZoom: true,
+        keepResult: false,
+        searchLabel: 'search'
+      });
+    }
 }
 
 function SearchForm(props) {
@@ -42,35 +48,6 @@ function SearchForm(props) {
                     minDate={props.start_date}
                 />
             </div>
-            <label htmlFor="name"><b>Country</b></label>
-            <input
-                type="text"
-                className="form-control"
-                name="country"
-                placeholder="Country"
-                value={props.country}
-                onChange={props.onChange}
-                noValidate
-            />
-            {props.errors.country.length > 0 &&
-            <span className='error'>{props.errors.country}</span>}
-            <br/>
-            <label htmlFor="name"><b>City</b></label>
-            <input
-                type="text"
-                className="form-control"
-                name="city"
-                placeholder="City"
-                value={props.city}
-                onChange={props.onChange}
-                noValidate
-            />
-            {props.errors.city.length > 0 ?
-                <span className='error'>{props.errors.city}</span> :
-                props.location_invalid > 0 ?
-                    <span className='error'>This location is invalid<br/></span> : <p/>}
-                    <br/>
-
         </form>
     );
 }
@@ -80,20 +57,11 @@ function SearchForm(props) {
         super()
         this.state = {
             posts: [],
-            city: '',
-            country: '',
             start_date: new Date(),
             end_date: new Date(),
-            errors: {
-                country: 'This field is required',
-                city: 'This field is required'
-
-            },
             invalid: 0,
-            location_invalid: 0,
             lat: 35.0015196,
             long: 30.8760272
-
         }
         this.onChange = this.onChange.bind(this)
         this.onSubmit = this.onSubmit.bind(this)
@@ -110,70 +78,36 @@ function SearchForm(props) {
   };
 
      onChange(e) {
-         let errors = this.state.errors;
         const { name, value } = e.target;
-
-        switch (name) {
-              case 'country':
-                errors.country =
-                  value.length < 1
-                    ? 'This field is required'
-                    : '';
-                break;
-                case 'city':
-                errors.city =
-                  value.length < 1
-                    ? 'This field is required'
-                    : '';
-                break;
-              default:
-                break;
-        }
-        this.setState({errors, [name]: value});
+        this.setState({[name]: value});
 
     }
 
      componentDidMount() {
-  }
-
-  onSubmit(e) {
-    e.preventDefault()
-    this.setState({invalid: 0});
-    this.setState({location_invalid: 0});
-
-
-     if (validateForm(this.state.errors)) {
+         this.setState({invalid: 0});
                   axios.defaults.withCredentials = true;
                   axios.put('http://127.0.0.1:5000/followed_posts',
-                      {country: this.state.country,
-                          city: this.state.city,
+                      {
                           start_date: this.state.start_date,
                           end_date: this.state.end_date
                         })
          .then(res => {
-             if (res.data == 'Bad Location'){
-                 this.setState({location_invalid: 1});
-                 this.setState({invalid: 1});
-             }
-             else{
                  this.setState({
-                     posts: res.data.posts,
-                     lat: res.data.latitude,
-                     long: res.data.longitude
+                     posts: res.data.posts
                  })
-             }
              console.log(res.data.posts);
          }) .catch(err => {
                     console.log(err)
                     this.setState({invalid: 1});
                 });
-     }
-     else{
-         this.setState({invalid: 1});
-     }
   }
 
+  onSubmit(e) {
+      e.preventDefault();
+      this.componentDidMount();
+  }
   render() {
+         const SearchBar = withLeaflet(SearchMap);
           let posts =  this.state.posts.map((post,idx) => {
             return (
                 <Marker key={`marker-${idx}`} position={[post.latitude, post.longitude]}>
@@ -200,8 +134,10 @@ function SearchForm(props) {
         });
     return (
         <div id="wrapper"> <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css"/>
+       <link  href="https://unpkg.com/leaflet-geosearch@latest/assets/css/leaflet.css" rel="stylesheet" />
         <div class="right col-md-3 mt-4 mx-auto">
             <h1 className="h3 mb-3 font-weight-normal"><b>Find Partners</b></h1>
+            {/*<p className="h8 mb-3 font-weight-normal">When are you planning on traveling?</p>*/}
               <div className="form-group">
                   {this.state.invalid >0 &&  <Alert color="danger">
                   Your search attempt is invalid. Please try again!
@@ -214,18 +150,17 @@ function SearchForm(props) {
                                  onSubmit={this.onSubmit}
                                  start_date={this.state.start_date}
                                  end_date={this.state.end_date}
-                                 country={this.state.country}
-                                 city={this.state.city}
-                                 errors={this.state.errors}
-                                 location_invalid={this.state.location_invalid}
                              />
-                         <Button variant="primary" onClick={this.onSubmit.bind(this)}>Search</Button>
+                         <Button variant="primary" onClick={this.onSubmit.bind(this)}>Submit</Button>
+            <br/><br/>
+            <h10 className="h8 mb-3 font-weight-normal">Submit your start and end dates, and then look for your wanted locations on the map.</h10>
+
         </div>
            <div className="col-md-10 mt-4 mx-auto left">
             <LeafletMap
                 center={[this.state.lat, this.state.long]}
                 zoom={6}
-                maxZoom={10}
+                maxZoom={20}
                 attributionControl={true}
                 zoomControl={true}
                 doubleClickZoom={true}
@@ -235,11 +170,12 @@ function SearchForm(props) {
                 easeLinearity={0.35}
                 enableHighAccuracy={true}
               >
+                        <SearchBar />
                 <TileLayer
                   url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
                 />
                 {posts}
-              </LeafletMap>
+            </LeafletMap>
            </div>
                 </div>
     );

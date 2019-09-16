@@ -11,10 +11,6 @@ import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
 import ReactPaginate from 'react-paginate';
 import {Nav, NavItem, NavLink} from "reactstrap";
-import {Link} from "react-router-dom";
-
-const validIntRegex =
-  RegExp(/^[0-9\b]+$/);
 
 const validateForm = (errors) => {
   let valid = true;

@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
-import { Map as LeafletMap, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Map as LeafletMap, TileLayer, Marker, Popup, withLeaflet, MapControl } from 'react-leaflet';
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import Button from "react-bootstrap/Button";
 import moment from "moment";
 import Alert from "reactstrap/es/Alert";
+
+
 
 const validateForm = (errors) => {
   let valid = true;
@@ -66,6 +68,7 @@ function SearchForm(props) {
                 props.location_invalid > 0 ?
                     <span className='error'>This location is invalid<br/></span> : <p/>}
                     <br/>
+
         </form>
     );
 }

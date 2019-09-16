@@ -1,0 +1,52 @@
+name: FlaskProject3.7
+channels:
+  - defaults
+dependencies:
+  - bcrypt=3.1.6=py37he774522_0
+  - ca-certificates=2019.5.15=1
+  - certifi=2019.6.16=py37_1
+  - cffi=1.12.3=py37h7a1dbc1_0
+  - click=7.0=py37_0
+  - flask=1.1.1=py_0
+  - flask-login=0.4.1=py37_0
+  - flask-sqlalchemy=2.4.0=py_0
+  - flask-wtf=0.14.2=py37_1
+  - freetype=2.9.1=ha9979f8_1
+  - itsdangerous=1.1.0=py37_0
+  - jinja2=2.10.1=py37_0
+  - jpeg=9b=hb83a4c4_2
+  - krb5=1.16.1=hc04afaa_7
+  - libpng=1.6.37=h2a8f88b_0
+  - libpq=11.2=h3235a2c_0
+  - libtiff=4.0.10=hb898794_2
+  - markupsafe=1.1.1=py37he774522_0
+  - olefile=0.46=py37_0
+  - openssl=1.1.1c=he774522_1
+  - pillow=6.1.0=py37hdc69c19_0
+  - pip=19.1.1=py37_0
+  - psycopg2=2.7.6.1=py37h7a1dbc1_0
+  - pycparser=2.19=py37_0
+  - python=3.7.4=h5263a28_0
+  - setuptools=41.0.1=py37_0
+  - six=1.12.0=py37_0
+  - sqlalchemy=1.3.5=py37he774522_0
+  - sqlite=3.29.0=he774522_0
+  - tk=8.6.8=hfa6e2cd_0
+  - vc=14.1=h0510ff6_4
+  - vs2015_runtime=14.15.26706=h3a45250_4
+  - werkzeug=0.15.4=py_0
+  - wheel=0.33.4=py37_0
+  - wincertstore=0.2=py37_0
+  - wtforms=2.2.1=py37_0
+  - xz=5.2.4=h2fa13f4_4
+  - zlib=1.2.11=h62dcd97_3
+  - zstd=1.3.7=h508b16e_0
+  - pip:
+    - flask-bcrypt==0.7.1
+    - flask-cors==3.0.8
+    - flask-jwt-extended==3.22.0
+    - geographiclib==1.49
+    - geopy==1.20.0
+    - pyjwt==1.7.1
+prefix: C:\ProgramData\Anaconda3\envs\FlaskProject3.7
+

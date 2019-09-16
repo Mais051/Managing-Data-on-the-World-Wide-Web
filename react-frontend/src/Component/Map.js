@@ -6,6 +6,8 @@ import Button from "react-bootstrap/Button";
 import moment from "moment";
 import Alert from "reactstrap/es/Alert";
 
+import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
+
 
 
 const validateForm = (errors) => {

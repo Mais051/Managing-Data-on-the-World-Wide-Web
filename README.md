@@ -9,6 +9,9 @@ you can create a new conda enviorment with the packages this way:
 in the terminal in the current directory (FlaskProject) run:
 > conda env create -f environment.yml
 
+(*) make sure you have Anaconda installed in order to use a conda enviorment
+
+
 ## 2. Download and install PostgreSQL. 
 We used the following credentials:
 

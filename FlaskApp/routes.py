@@ -4,10 +4,12 @@ import secrets
 from PIL import Image
 from flask import url_for, request, abort, jsonify, make_response
 from FlaskApp import app, db, bcrypt, login_manager, geolocator
-from FlaskApp.models import User, Travel, Follow
+from FlaskApp.models import User, Travel, Follow ,Notification,subscribers_table
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
-
+from flask_cors import CORS, cross_origin
+import datetime
+from sqlalchemy import desc
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -42,37 +44,105 @@ def forbidden(error):
     return make_response((jsonify({'error': 'Forbidden'})), 403)
 
 
-@app.route("/users/<int:user_id>", methods=['GET'])
+@app.route("/users/<int:user_id>", methods=['GET', 'PUT','DELETE','POST'])
 def get_user(user_id):
-    user = User.query.get_or_404(user_id)
-    image_file = url_for('static', filename='profile_pics/' + user.image_file)
+    if request.method == 'GET':
+        user = User.query.get_or_404(user_id)
+        image_file = url_for('static', filename='profile_pics/' + user.image_file)
 
-    return jsonify({'username': user.username, 'first_name': user.first_name, 'last_name': user.last_name,
+        return jsonify({'username': user.username, 'first_name': user.first_name, 'last_name': user.last_name,
                     'gender': user.gender, 'birth_date': user.birth_date, 'email': user.email,
                     'image_file': image_file, 'followers': len(user.followers.all()),
                     'followed': len(user.followed.all())})
+    if request.method == 'PUT':
+        data = request.get_json()
+        check_user = User.query.filter_by(username=data['username']).first()
+        if check_user:
+            if check_user.id != user_id:
+                return 'Username Taken'
+        user = User.query.get_or_404(user_id)
 
 
-@app.route("/users/posts", methods=['GET'])
-def get_user_posts():
-    user_id = int(request.args.get('id', 1))
-    page = int(request.args.get('page', 1))
-    if not user_id or not page:
-        abort(400)
 
-    user = User.query.get_or_404(user_id)
-    posts = user.travels.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
-    res = []
-    image_file = url_for('static', filename='profile_pics/' + user.image_file)
+        user = User.query.filter_by(username=data['username']).first()
+        user.first_name=data['first_name']
+        user.last_name=data['last_name']
+        user.email=data['email']
+        user.gender=data['gender']
+        user.birth_date=data['birth_date']
 
-    for post in posts.items:
-        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                    'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
+        db.session.commit()
+        return 'Updated'
+    if request.method =='DELETE':
+        data = request.get_json()
+        #make a response like in the lecture with the headers and return it
+        #user = User.query.filter_by(username=data['username']).first()
+        user = User.query.get_or_404(user_id)
+        db.session.delete(user)
+        #db.session.delete(user)
+        db.session.commit()
+        return 'Deleted'
 
-    result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result, 'length': len(user.travels.all())})
+@app.route("/image/<int:user_id>", methods=['PUT'])
+@login_required
+def imageUpload (user_id):
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        image_file= data
+        url = save_picture(image_file)
+        user.image_file=url
+        db.session.commit()
+        return 'Updated Image'
+
+
+
+
+@app.route("/follow/<int:user_id>", methods=['POST','DELETE'])
+def follow(user_id):
+    if request.method == 'POST':
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        follower_id=data['current_user']
+        follower = User.query.get_or_404(follower_id)
+        if not user:
+            abort(404)
+    #if data['isFollowing'] == False:
+        User.follow(follower,user)
+        return 'Followed'
+    if request.method == 'DELETE':
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        follower_id=data['current_user']
+        follower = User.query.get_or_404(follower_id)
+        User.unfollow(follower,user)
+        return 'UNFOLLOW'
+
+
+
+@app.route("/followers/<int:user_id>", methods=['GET'])
+def getfollowers(user_id):
+    subq = db.session.query(Follow).filter_by(followed_id=user_id).subquery()
+    followers_with_username = db.session.query(User).join((subq, subq.c.follower_id==User.id)).all()
+    followers = []
+    for foll in followers_with_username:
+        followers.append({'id': foll.id, 'username': foll.username, 'image_file': foll.image_file})
+    length = len(followers)
+    return jsonify({'followers': followers, 'length': length})
+
+
+
+@app.route("/following/<int:user_id>", methods=['GET'])
+def getfollowing(user_id):
+    subq = db.session.query(Follow).filter_by(follower_id=user_id).subquery()
+    following_with_username = db.session.query(User).join((subq, subq.c.followed_id==User.id)).all()
+    following = []
+    for foll in following_with_username:
+        following.append({'id': foll.id, 'username': foll.username, 'image_file': foll.image_file})
+    length = len(following)
+    return jsonify({'following': following, 'length': length})
+
+
+
 
 
 @app.route("/user/<string:name>", methods=['GET'])
@@ -98,139 +168,15 @@ def register():
     check_user = User.query.filter_by(username=data['username']).first()
     if check_user:
         return 'Username Taken'
+    check_password=len(data['password'])>8
+    if check_password:
+        return 'Password Invalid'
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     user = User(username=data['username'], first_name=data['first_name'], last_name=data['last_name'],
-                gender=data['gender'], birth_date=data['birth_date'], email=data['email'], password=hashed_password)
+                gender=data['gender'], birth_date=datetime.datetime.now(), email=data['email'], password=hashed_password)
     db.session.add(user)
     db.session.commit()
     return 'Created'
-
-
-@app.route("/image/<int:user_id>", methods=['PUT'])
-@login_required
-def user_img_update(user_id):
-    file = request.files['file']
-    user = User.query.get_or_404(user_id)
-    if current_user != user or not file:
-        abort(400)
-    path = save_picture(file)
-    current_user.image_file = path
-    db.session.commit()
-    return jsonify({'image_file': url_for('static', filename='profile_pics/' + path)})
-
-
-@app.route("/users/<int:user_id>", methods=['PUT'])
-@login_required
-def user_update(user_id):
-    user_data = request.get_json()
-    user = User.query.get_or_404(user_id)
-    if current_user != user or not user_data:
-        abort(400)
-    if not 'username' in user_data or not 'first_name' in user_data \
-            or not 'last_name' in user_data or not 'gender' in user_data or not 'birth_date' in user_data or not 'email' in user_data:
-        abort(400)
-    check_user = User.query.filter_by(email=user_data['email']).first()
-    if check_user and (check_user != current_user):
-        return 'Email Taken'
-    check_user = User.query.filter_by(username=user_data['username']).first()
-    if check_user and (check_user != current_user):
-        return 'Username Taken'
-
-    current_user.username = user_data['username']
-    current_user.first_name = user_data['first_name']
-    current_user.last_name = user_data['last_name']
-    current_user.gender = user_data['gender']
-    current_user.birth_date = user_data['birth_date']
-    current_user.email = user_data['email']
-    db.session.commit()
-    return 'Updated'
-
-
-@app.route("/posts/<int:travel_id>", methods=['GET'])
-def travel(travel_id):
-    post = Travel.query.get_or_404(travel_id)
-    image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
-
-    return jsonify({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                    'content': post.content, 'username': post.traveler.username, 'user_id': post.traveler.id,
-                    'id': post.id, 'image_file': image_file})
-
-
-@app.route("/posts/page/<int:page>", methods=['GET'])
-def get_posts(page):
-    res = []
-    all_posts = Travel.query.all()
-    posts = Travel.query.order_by(Travel.date_posted.desc()).paginate(page=page, per_page=5)
-
-    for post in posts.items:
-        image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
-        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                    'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
-
-    result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result, 'length': len(all_posts)})
-
-
-@app.route("/posts/new", methods=['POST'])
-@login_required
-def new_travel():
-    data = request.get_json()
-    if not data or not 'start_date' in data or not 'end_date' in data or not 'country' in data \
-            or not 'city' in data or not 'content' in data or not 'title' in data:
-        abort(400)
-
-    location = geolocator.geocode(data['city'] + ' ' + data['country'])
-    if location is None:
-        return 'Bad Location'
-    travel = Travel(start_date=data['start_date'], end_date=data['end_date'], country=data['country'],
-                    city=data['city'], latitude=location.latitude, longitude=location.longitude,
-                    content=data['content'], traveler=current_user,
-                    title=data['title'])
-    db.session.add(travel)
-    db.session.commit()
-    return 'Created'
-
-
-@app.route("/posts/<int:travel_id>", methods=['PUT'])
-@login_required
-def update_travel(travel_id):
-    data = request.get_json()
-    post = Travel.query.get_or_404(travel_id)
-    if post.traveler != current_user:
-        abort(403)
-
-    if not data or not 'start_date' in data or not 'end_date' in data or not 'country' in data \
-            or not 'city' in data or not 'content' in data:
-        abort(400)
-
-    location = geolocator.geocode(data['city'] + ' ' + data['country'])
-    if location is None:
-        return 'Bad Location'
-
-    post.start_date = data['start_date']
-    post.end_date = data['end_date']
-    post.country = data['country']
-    post.city = data['city']
-    post.latitude = location.latitude
-    post.longitude = location.longitude
-    post.content = data['content']
-    post.title = data['title']
-    db.session.commit()
-    return 'Updated'
-
-
-@app.route("/posts/<int:travel_id>", methods=['DELETE'])
-@login_required
-def delete_post_user(travel_id):
-    post = Travel.query.get_or_404(travel_id)
-    if post.traveler != current_user:
-        abort(403)
-    db.session.delete(post)
-    db.session.commit()
-    return 'Deleted', 201
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -255,70 +201,10 @@ def login():
 @app.route("/logout", methods=['GET'])
 @login_required
 def logout():
+    print('logging out')
     logout_user()
     return 'Logged Out', 201
 
-
-@app.route('/follow/<int:user_id>', methods=['POST'])
-@login_required
-def follow(user_id):
-    user = User.query.get_or_404(user_id)
-
-    if current_user.is_following(user):
-        abort(400)
-
-    current_user.follow(user)
-    db.session.commit()
-
-    return 'Followed', 200
-
-
-@app.route('/follow/<int:user_id>', methods=['DELETE'])
-@login_required
-def unfollow(user_id):
-    user = User.query.get_or_404(user_id)
-
-    if not current_user.is_following(user):
-        abort(400)
-
-    current_user.unfollow(user)
-    db.session.commit()
-
-    return 'Unfollowed', 200
-
-
-@app.route('/followers/<int:user_id>', methods=['GET'])
-def followers(user_id):
-    user = User.query.get_or_404(user_id)
-
-    page = request.args.get('page', 1, type=int)
-    pagination = user.followers.order_by(Follow.timestamp.desc()).paginate(page, per_page=5)
-    res = []
-
-    for item in pagination.items:
-        image_file = url_for('static', filename='profile_pics/' + item.follower.image_file)
-        res.append({'id': item.follower.id, 'username': item.follower.username, 'image_file': image_file,
-                    'timestamp': item.timestamp})
-
-    result = sorted(res, key=lambda d: d['timestamp'], reverse=True)
-    return jsonify({'followers': result, 'length': len(user.followers.all())})
-
-
-@app.route('/following/<user_id>', methods=['GET'])
-def followed_by(user_id):
-    user = User.query.get_or_404(user_id)
-    page = request.args.get('page', 1, type=int)
-
-    pagination = user.followed.order_by(Follow.timestamp.desc()).paginate(page, per_page=5)
-    res = []
-
-    for item in pagination.items:
-        image_file = url_for('static', filename='profile_pics/' + item.followed.image_file)
-        res.append({'id': item.followed.id, 'username': item.followed.username, 'image_file': image_file,
-                    'timestamp': item.timestamp})
-
-    result = sorted(res, key=lambda d: d['timestamp'], reverse=True)
-    return jsonify({'following': result, 'length': len(user.followed.all())})
 
 
 @app.route('/is_following/<int:user_id>', methods=['GET'])
@@ -331,6 +217,13 @@ def is_following(user_id):
     return 'False'
 
 
+@app.route('/',methods=['GET'])
+def usersdic():
+	res = User.query.all()
+	list_users = [r.as_dict() for r in res]
+	return jsonify(list_users)
+
+
 @app.route('/is_following_me/<int:user_id>', methods=['GET'])
 @login_required
 def is_following_me(user_id):
@@ -339,28 +232,6 @@ def is_following_me(user_id):
     if user.is_following(current_user):
         return 'True'
     return 'False'
-
-
-# posts written by current user and the people he follows only
-@app.route('/followed_posts/page/<int:page>', methods=['GET'])
-@login_required
-def followed_posts(page):
-    res = []
-    followed_users_posts = Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
-        .filter(Follow.follower_id == current_user.id)
-    user_posts = current_user.travels
-    all_posts = user_posts.union(followed_users_posts).order_by(Travel.date_posted.desc())
-    posts = all_posts.paginate(page=page, per_page=5)
-    for post in posts.items:
-        image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
-        res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                    'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                    'content': post.content, 'username': post.traveler.username,
-                    'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file})
-
-    result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result, 'length': len(all_posts.all())})
-
 
 def date_between(start_date, end_date, start_date_arg, end_date_arg):
     start_date_arg_converted = datetime.datetime.strptime(start_date_arg.split('T')[0], '%Y-%m-%d').date()
@@ -371,28 +242,136 @@ def date_between(start_date, end_date, start_date_arg, end_date_arg):
     return False
 
 
-@app.route('/followed_posts', methods=['PUT'])
-@login_required
-def followed_posts_date_range():
-    res = []
-    user_data = request.get_json()
-    if not 'start_date' in user_data or not 'end_date' in user_data:
-        abort(400)
-    start_date_arg = user_data['start_date']
-    end_date_arg = user_data['end_date']
+@app.route('/posts/<int:user_id>', methods=['GET','POST','PUT'])
+def get_posts(user_id):
+    if(request.method == 'GET'):
+        user = User.query.get_or_404(user_id)
+        subq = db.session.query(Follow).filter_by(follower_id=user_id).subquery()
+        posts_following = db.session.query(Travel,subq).filter(subq.c.followed_id==Travel.user_id).subquery()
 
-    followed_users_posts = Travel.query.join(Follow, Follow.followed_id == Travel.user_id) \
-        .filter(Follow.follower_id == current_user.id)
-    all_posts = current_user.travels.union(followed_users_posts).order_by(Travel.date_posted.desc())
+       #User.username,posts_following.id.label("post_id"),posts_following,title,
+       #         posts_following,date_posted,posts_following.start_date,posts_following.end_date,posts_following.country,
+        #        posts_following.city,posts_following.content
+        posts_following_username=db.session.query(posts_following.c.id.label('post_id'),User.id.label('user_user_id'),
+        User.username,posts_following.c.title, posts_following.c.date_posted,posts_following.c.start_date,
+        posts_following.c.end_date,posts_following.c.country,posts_following.c.city,posts_following.c.content
+        ).filter(User.id==posts_following.c.user_id).all()
+        posts = []
 
-    for post in all_posts.all():
-        if date_between(post.start_date, post.end_date, start_date_arg, end_date_arg):
-            image_file = url_for('static', filename='profile_pics/' + post.traveler.image_file)
-            res.append({'title': post.title, 'date_posted': post.date_posted, 'start_date': post.start_date,
-                        'end_date': post.end_date, 'country': post.country, 'city': post.city,
-                        'content': post.content, 'username': post.traveler.username,
-                        'user_id': post.traveler.id, 'id': post.id, 'image_file': image_file,
-                        'longitude': post.longitude, 'latitude': post.latitude})
+        for post in posts_following_username:
+            posts.append({'id':post.post_id,'username': post.username, 'title': post.title,'date_posted':post.date_posted,
+            'start_date':post.start_date,'end_date':post.end_date,'country':post.country,'city':post.city,
+            'content':post.content,'user_id':post.user_user_id})
+        user_posts = db.session.query(Travel).filter_by(user_id=user_id).all()
+        for post in user_posts:
+            posts.append({'id':post.id,'username': 'You', 'title': post.title,'date_posted':post.date_posted,
+                    'start_date':post.start_date,'end_date':post.end_date,'country':post.country,'city':post.city,
+                    'content':post.content,'user_id':post.user_id})
 
-    result = sorted(res, key=lambda d: d['id'], reverse=True)
-    return jsonify({'posts': result})
+        length = len(posts)
+        return jsonify({'posts': posts, 'length': length})
+
+    if(request.method == 'POST'):
+        data = request.get_json()
+        if not data:
+            abort(400)
+        if data['title'] == '':
+            return 'missing_title'
+        if data['country'] == '' :
+             return 'missing_country'
+        if data['city'] == '':
+             return 'missing_city'
+
+
+        post= Travel(title=data['title'],country=data['country'],city=data['city'],date_posted=datetime.datetime.now(),
+        start_date=datetime.datetime.now(),end_date=datetime.datetime.now(),content=data['content'],
+        user_id=user_id,latitude=0,longitude=0)
+        db.session.add(post)
+        db.session.commit()
+        return 'Added'
+    if(request.method == 'PUT'):
+        data = request.get_json()
+        if not data:
+            abort(400)
+        if data['title'] == '':
+            return 'missing_title'
+        if data['country'] == '' :
+             return 'missing_country'
+        if data['city'] == '':
+             return 'missing_city'
+
+        post= Travel.query.filter_by(id=data['id']).first()
+        post.title=data['title']
+        post.city=data['city']
+        post.country=data['country']
+        post.content=data['content']
+        noti=Notification(post_id=data['id'],action=1,notification_date=datetime.datetime.now())
+        db.session.add(noti)
+        db.session.commit()
+        return 'Updated'
+    return 'Ok'
+
+@app.route('/noti/<int:user_id>', methods=['GET'])
+def getnoti(user_id):
+    posts_id_subscribed=db.session.query(subscribers_table.c.post_id,subscribers_table.c.subscribe_date).filter(subscribers_table.c.user_id==user_id).subquery()
+    posts_subscribed=db.session.query(Travel.title,Travel.user_id,posts_id_subscribed).filter(posts_id_subscribed.c.post_id==Travel.id).subquery()
+    post_subscribed_username=db.session.query(User.username,posts_subscribed).filter(User.id==posts_subscribed.c.user_id).subquery()
+
+    notifications_subscribed=db.session.query(post_subscribed_username,Notification.notification_date).join((Notification,
+    post_subscribed_username.c.post_id==Notification.post_id)).subquery()
+
+    notifications_al=db.session.query(notifications_subscribed.c.title,notifications_subscribed.c.username,
+    notifications_subscribed.c.post_id,notifications_subscribed.c.notification_date,notifications_subscribed.c.user_id
+    ).order_by(desc(notifications_subscribed.c.notification_date)).all()
+
+    notifications=[]
+
+    for notification in notifications_al:
+        notifications.append({'post_id':notification.post_id,
+        'username':notification.username,'title':notification.title,'notification_date':notification.notification_date,
+        'user_id':notification.user_id})
+    length = len(notifications)
+    return jsonify({'notifications': notifications, 'length': length})
+
+
+
+@app.route("/post/<int:post_id>", methods=['GET','DELETE'])
+def getPost(post_id):
+    if request.method == 'GET':
+        travel = Travel.query.get_or_404(post_id)
+        return jsonify({'id': travel.id, 'title':travel.title,'country':travel.country,'city':travel.city,'content':travel.content})
+    if request.method == 'DELETE':
+        travel = Travel.query.get_or_404(post_id)
+        db.session.delete(travel)
+        db.session.commit()
+        return 'DELETED'
+    return 'OK'
+
+
+@app.route("/subscribe/<int:user_id>", methods=['POST','DELETE'])
+def subscribe(user_id):
+    if request.method == 'POST':
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        post_id=data['post_id']
+        post=Travel.query.filter_by(id=data['post_id']).first()
+        user.subposts.append(post)
+        db.session.add(user)
+        db.session.commit()
+
+        #if not post :
+         #   'Post does not exist'
+       # check_post = subscribers.query.filter_by(post_id=data['post_id'] ).filter_by(user_id=data['current_user']).first()
+        #if check_post:
+        #   return 'Already subscribed'
+        #else:
+        return 'Subscribed'
+    return 'yes we can'
+
+
+
+
+
+
+
+

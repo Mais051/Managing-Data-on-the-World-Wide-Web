@@ -3,11 +3,9 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import Navbar from './Component/Navbar'
 import Landing from './Component/Landing'
-import Map from './Component/Map'
 import Login from './Component/Login'
 import Register from './Component/Register'
 import Profile from './Component/Profile'
-import Posts from './Component/Posts'
 import {Redirect} from "react-router-dom";
 
 
@@ -24,7 +22,10 @@ class App extends Component {
       <Router>
         <div className="App">
           <Navbar />
-          <Route exact path="/" component={Landing} />
+          <Route exact path="/" render={(props) => (
+              isLoggedIn() ? (
+                  <Landing {...props} />) : (<Redirect to="/login"/> )
+          )}/>
           <div className="container">
             <Route exact path="/register" render={(props) => (
                 !isLoggedIn() ? (
@@ -33,14 +34,6 @@ class App extends Component {
             <Route exact path="/login" render={(props) => (
                 !isLoggedIn() ? (
                     <Login {...props} />) : (<Redirect to="/profile"/> )
-            )}/>
-            {/*<Route exact path="/profile/" render={(props) => (*/}
-            {/*    isLoggedIn() ? (*/}
-            {/*        <UserProfile {...props} />) : (<Redirect to="/login"/> )*/}
-            {/*)}/>*/}
-             <Route exact path="/posts" render={(props) => (
-                isLoggedIn() ? (
-                    <Posts {...props} />) : (<Redirect to="/login"/> )
             )}/>
              <Route exact path="/users/:id" render={(props) => (
                 isLoggedIn() ? (
@@ -51,10 +44,8 @@ class App extends Component {
                     <Profile {...props} />) : (<Redirect to="/login"/> )
             )}/>
 
-            <Route exact path="/map" render={(props) => (
-                isLoggedIn() ? (
-                    <Map {...props} />) : (<Redirect to="/login"/> )
-            )}/>
+
+
           </div>
         </div>
       </Router>

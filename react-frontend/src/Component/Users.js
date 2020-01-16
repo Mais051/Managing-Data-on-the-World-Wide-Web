@@ -23,6 +23,8 @@ export class Users extends Component{
         if (this.props.type == 1) {
             axios.defaults.withCredentials = true;
             axios.get('http://127.0.0.1:5000/followers/' + this.props.id + "?page=" + page).then((response) => {
+                console.log('response = ', response.data.followers);
+
                 this.setState({
                     users: response.data.followers,
                     amount: response.data.length
@@ -34,6 +36,7 @@ export class Users extends Component{
         else{
              axios.defaults.withCredentials = true;
             axios.get('http://127.0.0.1:5000/following/' + this.props.id + "?page=" + page).then((response) => {
+                console.log('response.data.length = ', response.data.length);
                 this.setState({
                     users: response.data.following,
                     amount: response.data.length
@@ -58,14 +61,12 @@ export class Users extends Component{
     render(){
          let users =  this.state.users.map((user) => {
             return (
-                <div className="col-md-24 mx-auto">
-              <tr>
-                    <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
-                <td><img  className="rounded-circle account-img"
-                                               src={"http://127.0.0.1:5000" + user.image_file}
-                                               height="60" width="60"
-                            />  <a href={"/users/"+user.id}>{'     '+user.username}</a></td>
-              </tr>
+                <div className="col-md-24 mx-auto" key={user.id}>
+                    <tr>
+                        <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
+                        <td><img  className="rounded-circle account-img" src={"http://127.0.0.1:5000" + user.image_file} height="60" width="60"/>
+                        <a href={"/users/"+user.id}>{'     '+user.username}</a></td>
+                    </tr>
                 </div>
 
             );
@@ -74,9 +75,8 @@ export class Users extends Component{
          return (
              <div>
                  <table className="table col-md-6 mx-auto">
-                    <tbody> {users}</tbody>
+                    <tbody>{users}</tbody>
                  </table>
-
                   <ReactPaginate
                       breakLabel={'...'}
                       breakClassName={'break-me'}

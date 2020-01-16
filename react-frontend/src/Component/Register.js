@@ -44,11 +44,11 @@ class Register extends Component {
       email: '',
       password: '',
       errors: {
-          username: '',
-          email: '',
-          password: '',
-          first_name: '',
-          last_name: '',
+          username: 'Please insert username',
+          email: 'Please insert Email',
+          password: 'Please enter at least 8 characters',
+          first_name: 'Please insert first name',
+          last_name: 'Please  insert last name',
           gender: 'Please choose your gender',
       },
       user_taken: 0,
@@ -78,6 +78,7 @@ class Register extends Component {
                   value.length < 1 || value.length > 20
                     ? 'Username is not valid!'
                     : '';
+                console.log("username.error = ", errors.username);
                 break;
             case 'gender':
                 errors.gender='';
@@ -91,8 +92,8 @@ class Register extends Component {
                 break;
               case 'password':
                 errors.password =
-                  value.length < 1 || value.length > 60
-                    ? 'Password is not valid!'
+                  value.length < 8 || value.length > 60
+                    ? 'Your password must contain at least 8 characters!'
                     : '';
                 break;
                 case 'first_name':
@@ -118,6 +119,7 @@ class Register extends Component {
     this.setState({user_taken: 0});
     this.setState({email_taken: 0});
 
+
     const newUser = {
       username: this.state.username,
       first_name: this.state.first_name,
@@ -129,19 +131,27 @@ class Register extends Component {
     }
 
      if (validateForm(this.state.errors)) {
-         register(newUser).then(res => {
-             if (res == 'Created') {
-                 this.props.history.push(`/login`)
-             }
-             if (res == 'Username Taken'){
-                 this.setState({user_taken: 1});
-                 this.setState({invalid: 1});
-             }
-             if (res == 'Email Taken'){
-                 this.setState({email_taken: 1});
-                 this.setState({invalid: 1});
-             }
-         })
+         if(this.state.username.length < 1 ||
+             this.state.first_name.length < 1 ||
+             this.state.last_name.length < 1 ||
+             this.state.email.length < 1){
+             this.setState({invalid: 1});
+         }else{
+             register(newUser).then(res => {
+                 if (res == 'Created') {
+                     this.props.history.push(`/login`)
+                 }
+                 if (res == 'Username Taken'){
+                     this.setState({user_taken: 1});
+                     this.setState({invalid: 1});
+                 }
+                 if (res == 'Email Taken'){
+                     this.setState({email_taken: 1});
+                     this.setState({invalid: 1});
+                 }
+
+             })
+         }
      }
      else{
          this.setState({invalid: 1});
@@ -170,9 +180,9 @@ class Register extends Component {
                   noValidate
                 />
                  {this.state.errors.username.length > 0 &&
-                <span className='error'>{this.state.errors.username}</span>}
+                 <span className='error'>{this.state.errors.username}</span>}
                 {this.state.user_taken > 0 &&
-                <span className='error'>This username is taken</span>}
+              <span className='error'>This username is taken</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="name">First name</label>

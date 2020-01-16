@@ -5,6 +5,12 @@ import axios from "axios";
 import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
 import Button from "reactstrap/es/Button";
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+
 
 const update = updatedUser => {
     axios.defaults.withCredentials = true;
@@ -21,6 +27,7 @@ const update = updatedUser => {
         return response.data
     })
 }
+
 
 const isChecked = gender =>
 {
@@ -79,6 +86,64 @@ function ProfileInfo(props){
   );
 }
 
+function DeleteAccount(props) {
+    const [open, setOpen] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    function OnClickDelete() {
+        console.log("user_id = ",props.id);
+        axios.defaults.withCredentials = true;
+        //const props_backup = props.id;
+        //console.log("props_backup =  ", props_backup);
+        return axios
+            .delete('http://127.0.0.1:5000/users/'+props.id).then(response => {
+                //props_backup.history.push("/");
+                localStorage.removeItem('usertoken');
+
+                if(localStorage.usertoken){
+                    console.log("TRUE");
+                }else{
+                    console.log("FALSE");
+                }
+            }
+            );
+    }
+    return (
+        <div>
+            <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+                Delete My Account
+            </Button>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">{"Delete My Account"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Are you sure you want to delete your account?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={OnClickDelete} color="primary" autoFocus>
+                        Yes
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </div>
+    )
+}
 function EditProfile(props){
   return(
           <div className="col-md-6 mt-3 mx-auto">
@@ -305,10 +370,11 @@ export class About extends Component {
       const formData = new FormData();
       formData.append("file", img);
       axios.defaults.withCredentials = true;
+      console.log("res.data.formData :", formData['file']);
       axios
-        .put("http://127.0.0.1:5000/image/"+this.props.id, formData)
+        .put("http://127.0.0.1:5000/image/"+this.props.id,formData)
         .then(res =>
-            {console.log(res.data.image_file)
+            {
                 this.props.updatePic({image_file:res.data.image_file});
             }
 
@@ -340,8 +406,11 @@ export class About extends Component {
     }
 
      if (validateForm(this.state.errors)) {
+         //console.log("updating");
          update(updatedUser).then(res => {
+             console.log("res = ",res);
              if (res == 'Updated') {
+                 console.log("this.state.file :", this.state.file);
                  if (this.state.file){
                      this.uploadImg()
                      this.props.updateInfo(info);
@@ -368,6 +437,7 @@ export class About extends Component {
          this.setState({invalid: 1});
      }
   }
+
 
   render() {
     return (
@@ -405,6 +475,10 @@ export class About extends Component {
             <div className="col-md-6 mt-1 mx-auto">
             {!this.state.flag && <Button className="btn btn-lg btn-block" color="secondary" onClick={this.toggleUpdate.bind(this)}>Cancel</Button>}
             </div>
+            {this.state.flag && (this.state.current_user == this.props.id) && <DeleteAccount
+                id={this.props.id}
+                username={this.state.username}
+            />}
             </div>
       </div>
     )

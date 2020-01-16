@@ -5,6 +5,10 @@ import Alert from "reactstrap/es/Alert";
 import axios from "axios";
 
 export const register = newUser => {
+    console.log("register");
+  const posting = (newUser.title.length  >1 || newUser.city.length >1 ||
+                    newUser.country.length >1 || newUser.content.length  >1);
+  console.log("posting: ",posting);
   return axios
     .post('http://127.0.0.1:5000/user/new', {
       username: newUser.username,
@@ -13,7 +17,12 @@ export const register = newUser => {
       gender: newUser.gender,
       birth_date: newUser.birth_date,
       email: newUser.email,
-      password: newUser.password
+      password: newUser.password,
+      title:newUser.title,
+      country: newUser.country,
+      city:newUser.city,
+      content:newUser.content,
+      posting: posting
     })
     .then(response => {
         return response.data
@@ -43,6 +52,12 @@ class Register extends Component {
       birth_date: new Date(),
       email: '',
       password: '',
+      title: '',
+      country: '',
+      city: '',
+      start_date: new Date(),
+      end_date: new Date(),
+      content: '',
       errors: {
           username: 'Please insert username',
           email: 'Please insert Email',
@@ -50,7 +65,14 @@ class Register extends Component {
           first_name: 'Please insert first name',
           last_name: 'Please  insert last name',
           gender: 'Please choose your gender',
+          title: '',
+          country:'',
+          city:'',
       },
+      missing_title:0,
+      missing_country:0,
+      missing_city:0,
+      date_invalid:0,
       user_taken: 0,
       email_taken: 0,
       invalid: 0
@@ -59,6 +81,19 @@ class Register extends Component {
     this.onChange = this.onChange.bind(this)
     this.onSubmit = this.onSubmit.bind(this)
   }
+
+
+
+    handleChange_start = date => {
+        this.setState({
+            start_date: date
+        });
+    };
+    handleChange_end = date => {
+        this.setState({
+            end_date: date
+        });
+    };
 
   handleChange = date => {
     this.setState({
@@ -118,7 +153,7 @@ class Register extends Component {
     this.setState({invalid: 0});
     this.setState({user_taken: 0});
     this.setState({email_taken: 0});
-
+    console.log("onSubmit");
 
     const newUser = {
       username: this.state.username,
@@ -127,8 +162,14 @@ class Register extends Component {
       gender: this.state.gender,
       birth_date: this.state.birth_date,
       email: this.state.email,
-      password: this.state.password
-    }
+      password: this.state.password,
+      title: this.state.title,
+      city: this.state.city,
+      country: this.state.country,
+      content: this.state.content,
+      start_date: this.state.start_date,
+      end_date: this.state.end_date
+    };
 
      if (validateForm(this.state.errors)) {
          if(this.state.username.length < 1 ||
@@ -149,7 +190,15 @@ class Register extends Component {
                      this.setState({email_taken: 1});
                      this.setState({invalid: 1});
                  }
+                 if (res == 'missing_city')
+                     this.setState({missing_city: 1});
 
+                 if (res == 'missing_country')
+                     this.setState({missing_country: 1})
+                 if (res == 'missing_title')
+                     this.setState({missing_title: 1})
+                 if (res == 'invalid_date')
+                     this.setState({invalid_date: 1})
              })
          }
      }
@@ -159,118 +208,253 @@ class Register extends Component {
   }
 
   render() {
-    return (
-      <div className="container">
-        <div className="row">
-          <div className="col-md-6 mt-5 mx-auto">
-            <form noValidate onSubmit={this.onSubmit}>
-              <h1 className="h3 mb-3 font-weight-normal">Register</h1>
-              <div className="form-group">
-                  {this.state.invalid >0 &&  <Alert color="danger">
-                  Your registration is invalid. Please try again!
-                </Alert> }
-                <label htmlFor="name">Username</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="username"
-                  placeholder="Enter your username"
-                  value={this.state.username}
-                  onChange={this.onChange}
-                  noValidate
-                />
-                 {this.state.errors.username.length > 0 &&
-                 <span className='error'>{this.state.errors.username}</span>}
-                {this.state.user_taken > 0 &&
-              <span className='error'>This username is taken</span>}
+      const postForm=(
+          <div className="container">
+              <div className="row">
+                  <div className="col-md-6 mt-5 mx-auto">
+
+                      <div className="form-group">
+                          {this.state.invalid >0 &&  <Alert color="danger">
+                              Your Post or your registration is invalid. Please try again!
+                          </Alert> }
+                          <label htmlFor="name">Title</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="title"
+                              placeholder="Title"
+                              value={this.state.title}
+                              onChange={this.onChange}
+                              noValidate
+                          />
+                      </div>
+                      <div className="form-group">
+                          <label htmlFor="name">Country</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="country"
+                              placeholder="Country"
+                              value={this.state.country}
+                              onChange={this.onChange}
+                              noValidate
+                          />
+                      </div>
+                      <div className="form-group">
+                          <label htmlFor="name">City</label>
+                          <input
+                              type="text"
+                              className="form-control"
+                              name="city"
+                              placeholder="City"
+                              value={this.state.city}
+                              onChange={this.onChange}
+                              noValidate
+                          />
+                      </div>
+                      <div className="form-group">
+                          <label htmlFor="name">Start Date</label><br></br>
+                          <DatePicker
+                              name="start_date"
+                              selected={this.state.start_date}
+                              onChange={this.handleChange_start}
+                              dateFormat="dd/MM/yyyy"
+                          />
+                      </div>
+                      <div className="form-group">
+                          <label htmlFor="name">End Date</label><br></br>
+                          <DatePicker
+                              name="end_date"
+                              selected={this.state.end_date}
+                              onChange={this.handleChange_end}
+                              dateFormat="dd/MM/yyyy"
+                          />
+                      </div>
+                      <div className="form-group">
+                          <label htmlFor="content">Content</label>
+                          <input
+                              type="text"
+                              style={{height: 400, width:300}}
+                              className="form-control"
+                              name="content"
+                              placeholder="Content"
+                              value={this.state.content}
+                              onChange={this.onChange}
+                              noValidate
+                          />
+                      </div>
+
+
+                  </div>
               </div>
-              <div className="form-group">
-                <label htmlFor="name">First name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="first_name"
-                  placeholder="Enter your first name"
-                  value={this.state.first_name}
-                  onChange={this.onChange}
-                  noValidate
-                />
-                {this.state.errors.first_name.length > 0 &&
-                <span className='error'>{this.state.errors.first_name}</span>}
+          </div>)
+      const registerForm =(
+          <div className="container">
+              <div className="row">
+                          <h1 className="h3 mb-3 font-weight-normal">Register</h1>
+                          <div className="form-group">
+                              {this.state.invalid >0 &&  <Alert color="danger">
+                                  Your registration is invalid. Please try again!
+                              </Alert> }
+                              <label htmlFor="name">Username</label>
+                              <input
+                                  type="text"
+                                  className="form-control"
+                                  name="username"
+                                  placeholder="Enter your username"
+                                  value={this.state.username}
+                                  onChange={this.onChange}
+                                  noValidate
+                              />
+                              {this.state.errors.username.length > 0 &&
+                              <span className='error'>{this.state.errors.username}</span>}
+                              {this.state.user_taken > 0 &&
+                              <span className='error'>This username is taken</span>}
+                          </div>
+                          <div className="form-group">
+                              <label htmlFor="name">First name</label>
+                              <input
+                                  type="text"
+                                  className="form-control"
+                                  name="first_name"
+                                  placeholder="Enter your first name"
+                                  value={this.state.first_name}
+                                  onChange={this.onChange}
+                                  noValidate
+                              />
+                              {this.state.errors.first_name.length > 0 &&
+                              <span className='error'>{this.state.errors.first_name}</span>}
+                          </div>
+                          <div className="form-group">
+                              <label htmlFor="name">Last name</label>
+                              <input
+                                  type="text"
+                                  className="form-control"
+                                  name="last_name"
+                                  placeholder="Enter your last name"
+                                  value={this.state.last_name}
+                                  onChange={this.onChange}
+                                  noValidate
+                              />
+                              {this.state.errors.last_name.length > 0 &&
+                              <span className='error'>{this.state.errors.last_name}</span>}
+                          </div>
+                          <div className="form-group">
+                              <label htmlFor="name">Gender</label><br></br>
+                              <input type="radio" name="gender" value="Male" onChange={this.onChange}/> Male<br></br>
+                              <input type="radio" name="gender" value="Female" onChange={this.onChange}/> Female<br></br>
+                              <input type="radio" name="gender" value="other" onChange={this.onChange}/> Other
+                          </div>
+                          {this.state.errors.gender.length > 0 &&
+                          <span className='error'>{this.state.errors.gender}</span>}
+                          <div className="form-group">
+                              <label htmlFor="name">Birth date</label><br></br>
+                              <DatePicker
+                                  name="birth_date"
+                                  selected={this.state.birth_date}
+                                  onChange={this.handleChange}
+                                  dateFormat="dd/MM/yyyy"
+                                  maxDate={new Date()}
+                              />
+                          </div>
+                          <div className="form-group">
+                              <label htmlFor="email">Email address</label>
+                              <input
+                                  type="email"
+                                  className="form-control"
+                                  name="email"
+                                  placeholder="Enter email"
+                                  value={this.state.email}
+                                  onChange={this.onChange}
+                                  noValidate
+                              />
+                              {this.state.errors.email.length > 0 &&
+                              <span className='error'>{this.state.errors.email}</span>}
+                              {this.state.email_taken > 0 &&
+                              <span className='error'>This email is taken</span>}
+                          </div>
+                          <div className="form-group">
+                              <label htmlFor="password">Password</label>
+                              <input
+                                  type="password"
+                                  className="form-control"
+                                  name="password"
+                                  placeholder="Password"
+                                  value={this.state.password}
+                                  onChange={this.onChange}
+                                  noValidate
+                              />
+                              {this.state.errors.password.length > 0 &&
+                              <span className='error'>{this.state.errors.password}</span>}
+                          </div>
+
               </div>
-              <div className="form-group">
-                <label htmlFor="name">Last name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="last_name"
-                  placeholder="Enter your last name"
-                  value={this.state.last_name}
-                  onChange={this.onChange}
-                  noValidate
-                />
-                 {this.state.errors.last_name.length > 0 &&
-                <span className='error'>{this.state.errors.last_name}</span>}
-              </div>
-              <div className="form-group">
-                <label htmlFor="name">Gender</label><br></br>
-                <input type="radio" name="gender" value="Male" onChange={this.onChange}/> Male<br></br>
-                <input type="radio" name="gender" value="Female" onChange={this.onChange}/> Female<br></br>
-                <input type="radio" name="gender" value="other" onChange={this.onChange}/> Other
-              </div>
-                 {this.state.errors.gender.length > 0 &&
-                <span className='error'>{this.state.errors.gender}</span>}
-              <div className="form-group">
-                  <label htmlFor="name">Birth date</label><br></br>
-                <DatePicker
-                 name="birth_date"
-                 selected={this.state.birth_date}
-                 onChange={this.handleChange}
-                 dateFormat="dd/MM/yyyy"
-                 maxDate={new Date()}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="email">Email address</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  name="email"
-                  placeholder="Enter email"
-                  value={this.state.email}
-                  onChange={this.onChange}
-                  noValidate
-                />
-                  {this.state.errors.email.length > 0 &&
-                <span className='error'>{this.state.errors.email}</span>}
-                 {this.state.email_taken > 0 &&
-                <span className='error'>This email is taken</span>}
-              </div>
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  name="password"
-                  placeholder="Password"
-                  value={this.state.password}
-                  onChange={this.onChange}
-                  noValidate
-                />
-                  {this.state.errors.password.length > 0 &&
-                <span className='error'>{this.state.errors.password}</span>}
-              </div>
-              <button
-                type="submit"
-                className="btn btn-lg btn-primary btn-block"
-              >
-                Register!
-              </button>
-            </form>
           </div>
+      )
+
+
+
+    return (
+        //
+        // <form noValidate onSubmit={this.onSubmit}>
+        //     <div className="col-md-6 mt-5 mx-auto">
+        //         <div id="background" style={{height: "400px", position: 'relative'}}>
+        //             <div id="form-wrapper" style={{width: "70%", margin: 0}}>
+        //                 <div id="form1" style={{width: "50%", display: 'inline-block', minwidth:"200px"}}>
+        //                     <form><div>{postForm}</div></form>
+        //                 </div>
+        //                 <div id="form2" style={{width: "50%", display: 'inline-block', minwidth:"200px"}}>
+        //                     <form><div>{registerForm}</div></form>
+        //                 </div>
+        //             </div>
+        //         </div>
+        //         <button
+        //             type="submit"
+        //             className="btn btn-lg btn-primary btn-block"
+        //         >
+        //             Submit!
+        //         </button>
+        //     </div>
+        // </form>
+        <div id="background"
+             style={{
+                 backgroundSize: 'cover',
+                 backgroundPosition: 'center',
+                 height: "400px",
+                 position: 'relative'}}>
+            <div id="form-wrapper"
+                 style={{
+                     width: "70%",
+                     margin: 0,
+                     textAlign: 'center'}}>
+                <div id="form1"
+                     style={{
+                         width: "50%",
+                         display: 'inline-block',
+                         minwidth:"200px"}}>
+                    <form><div>{postForm}</div></form>
+                </div>
+                <div id="form2"
+                     style={{
+                         width: "50%",
+                         display: 'inline-block',
+                         minwidth:"200px"}}>
+                    <form><div>{registerForm}</div></form>
+                </div>
+            </div>
+                     <button
+                        type="submit"
+                        className="btn btn-lg btn-primary btn-block"
+                        onClick={this.onSubmit}
+                    >
+                        Submit!
+                    </button>
+
         </div>
-      </div>
     )
+
+
+
   }
 }
 

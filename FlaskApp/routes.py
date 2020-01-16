@@ -29,6 +29,15 @@ def save_picture(form_picture):
     return picture_fn
 
 
+def date_between(start_date, end_date, start_date_arg, end_date_arg):
+    start_date_arg_converted = datetime.datetime.strptime(start_date_arg.split('T')[0], '%Y-%m-%d').date()
+    end_date_arg_converted = datetime.datetime.strptime(end_date_arg.split('T')[0], '%Y-%m-%d').date()
+
+    if start_date.date() <= end_date_arg_converted:
+        return end_date.date() >= start_date_arg_converted
+    return False
+
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response((jsonify({'error': 'Not Found'})), 404)
@@ -61,27 +70,22 @@ def get_user(user_id):
             if check_user.id != user_id:
                 return 'Username Taken'
         user = User.query.get_or_404(user_id)
-
-
-
         user = User.query.filter_by(username=data['username']).first()
         user.first_name=data['first_name']
         user.last_name=data['last_name']
         user.email=data['email']
         user.gender=data['gender']
         user.birth_date=data['birth_date']
-
         db.session.commit()
         return 'Updated'
     if request.method =='DELETE':
         data = request.get_json()
         #make a response like in the lecture with the headers and return it
-        #user = User.query.filter_by(username=data['username']).first()
         user = User.query.get_or_404(user_id)
         db.session.delete(user)
-        #db.session.delete(user)
         db.session.commit()
         return 'Deleted'
+
 
 @app.route("/image/<int:user_id>", methods=['PUT'])
 @login_required
@@ -95,8 +99,6 @@ def imageUpload (user_id):
         return 'Updated Image'
 
 
-
-
 @app.route("/follow/<int:user_id>", methods=['POST','DELETE'])
 def follow(user_id):
     if request.method == 'POST':
@@ -106,7 +108,6 @@ def follow(user_id):
         follower = User.query.get_or_404(follower_id)
         if not user:
             abort(404)
-    #if data['isFollowing'] == False:
         User.follow(follower,user)
         return 'Followed'
     if request.method == 'DELETE':
@@ -116,7 +117,6 @@ def follow(user_id):
         follower = User.query.get_or_404(follower_id)
         User.unfollow(follower,user)
         return 'UNFOLLOW'
-
 
 
 @app.route("/followers/<int:user_id>", methods=['GET'])
@@ -130,7 +130,6 @@ def getfollowers(user_id):
     return jsonify({'followers': followers, 'length': length})
 
 
-
 @app.route("/following/<int:user_id>", methods=['GET'])
 def getfollowing(user_id):
     subq = db.session.query(Follow).filter_by(follower_id=user_id).subquery()
@@ -140,9 +139,6 @@ def getfollowing(user_id):
         following.append({'id': foll.id, 'username': foll.username, 'image_file': foll.image_file})
     length = len(following)
     return jsonify({'following': following, 'length': length})
-
-
-
 
 
 @app.route("/user/<string:name>", methods=['GET'])
@@ -171,11 +167,35 @@ def register():
     check_password=len(data['password'])>8
     if check_password:
         return 'Password Invalid'
-    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-    user = User(username=data['username'], first_name=data['first_name'], last_name=data['last_name'],
-                gender=data['gender'], birth_date=datetime.datetime.now(), email=data['email'], password=hashed_password)
-    db.session.add(user)
-    db.session.commit()
+
+    if data['posting'] == True:
+        if data['title'] == '':
+            return 'missing_title'
+        if data['country'] == '' :
+            return 'missing_country'
+        if data['city'] == '':
+            return 'missing_city'
+
+    session = db.session()
+    try:
+        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+        user = User(username=data['username'], first_name=data['first_name'], last_name=data['last_name'],
+                    gender=data['gender'], birth_date=datetime.datetime.now(), email=data['email'], password=hashed_password)
+        session.add(user)
+
+        if data['posting'] == True:
+            user_created = session.query(User).filter_by(username=data['username']).first()
+            post= Travel(title=data['title'],country=data['country'],city=data['city'],date_posted=datetime.datetime.now(),
+                start_date=datetime.datetime.now(),end_date=datetime.datetime.now(),content=data['content'],
+                user_id=user_created.id,latitude=0,longitude=0)
+            session.add(post)
+        session.commit()
+    except:
+        session.rollback()
+        return 'Failed'
+    finally:
+        session.close()
+
     return 'Created'
 
 
@@ -194,7 +214,6 @@ def login():
         result = access_token
     else:
         abort(400)
-
     return result
 
 
@@ -206,12 +225,10 @@ def logout():
     return 'Logged Out', 201
 
 
-
 @app.route('/is_following/<int:user_id>', methods=['GET'])
 @login_required
 def is_following(user_id):
     user = User.query.get_or_404(user_id)
-
     if current_user.is_following(user):
         return 'True'
     return 'False'
@@ -228,18 +245,9 @@ def usersdic():
 @login_required
 def is_following_me(user_id):
     user = User.query.get_or_404(user_id)
-
     if user.is_following(current_user):
         return 'True'
     return 'False'
-
-def date_between(start_date, end_date, start_date_arg, end_date_arg):
-    start_date_arg_converted = datetime.datetime.strptime(start_date_arg.split('T')[0], '%Y-%m-%d').date()
-    end_date_arg_converted = datetime.datetime.strptime(end_date_arg.split('T')[0], '%Y-%m-%d').date()
-
-    if start_date.date() <= end_date_arg_converted:
-        return end_date.date() >= start_date_arg_converted
-    return False
 
 
 @app.route('/posts/<int:user_id>', methods=['GET','POST','PUT'])
@@ -249,9 +257,6 @@ def get_posts(user_id):
         subq = db.session.query(Follow).filter_by(follower_id=user_id).subquery()
         posts_following = db.session.query(Travel,subq).filter(subq.c.followed_id==Travel.user_id).subquery()
 
-       #User.username,posts_following.id.label("post_id"),posts_following,title,
-       #         posts_following,date_posted,posts_following.start_date,posts_following.end_date,posts_following.country,
-        #        posts_following.city,posts_following.content
         posts_following_username=db.session.query(posts_following.c.id.label('post_id'),User.id.label('user_user_id'),
         User.username,posts_following.c.title, posts_following.c.date_posted,posts_following.c.start_date,
         posts_following.c.end_date,posts_following.c.country,posts_following.c.city,posts_following.c.content
@@ -282,13 +287,13 @@ def get_posts(user_id):
         if data['city'] == '':
              return 'missing_city'
 
-
         post= Travel(title=data['title'],country=data['country'],city=data['city'],date_posted=datetime.datetime.now(),
         start_date=datetime.datetime.now(),end_date=datetime.datetime.now(),content=data['content'],
         user_id=user_id,latitude=0,longitude=0)
         db.session.add(post)
         db.session.commit()
         return 'Added'
+
     if(request.method == 'PUT'):
         data = request.get_json()
         if not data:

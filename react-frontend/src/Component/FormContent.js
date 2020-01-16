@@ -108,16 +108,16 @@ class FormContent extends Component {
         });
     }
 
-    addNoti(editedPost){
-        return axios.request({
-            method:'post',
-            url:'http://127.0.0.1:5000/noti/'+ this.props.current_user,
-            data: {'title': editedPost.title,'country':editedPost.country,'city':editedPost.city,'content':editedPost.content,'id': this.props.post.id}
-        }).then(response => {
-            return response.data;
-        });
-
-    }
+    // addNoti(editedPost){
+    //     return axios.request({
+    //         method:'post',
+    //         url:'http://127.0.0.1:5000/noti/'+ this.props.current_user,
+    //         data: {'title': editedPost.title,'country':editedPost.country,'city':editedPost.city,'content':editedPost.content,'id': this.props.post.id}
+    //     }).then(response => {
+    //         return response.data;
+    //     });
+    //
+    // }
 
     onSubmit(e){
         const newPost = {

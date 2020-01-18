@@ -5,6 +5,22 @@ import axios from "axios";
 import Alert from "reactstrap/es/Alert";
 import DatePicker from "react-datepicker";
 import React, { Component } from 'react'
+import L from  'leaflet';
+import esri from 'esri-leaflet';
+import * as ELG from 'esri-leaflet-geocoder';
+import { Map, TileLayer } from 'react-leaflet';
+import { OpenStreetMapProvider } from 'leaflet-geosearch';
+//import "../Css/Map.css";
+
+// // import marker icons
+// delete L.Icon.Default.prototype._getIconUrl;
+//
+// L.Icon.Default.mergeOptions({
+//     iconRetinaUrl:
+//         "https://unpkg.com/leaflet@1.4.0/dist/images/marker-icon-2x.png",
+//     iconUrl: "https://unpkg.com/leaflet@1.4.0/dist/images/marker-icon.png",
+//     shadowUrl: "https://unpkg.com/leaflet@1.4.0/dist/images/marker-shadow.png"
+// });
 
 const validateForm = (errors) => {
     let valid = true;
@@ -13,6 +29,7 @@ const validateForm = (errors) => {
     );
     return valid;
 }
+
 
 class FormContent extends Component {
 
@@ -179,10 +196,24 @@ class FormContent extends Component {
                 content: this.props.post.content
             })
         }
+        // const map = this.leafletMap.leafletElement;
+        // const searchControl = new ELG.Geosearch().addTo(map);
+        // const results = new L.LayerGroup().addTo(map);
+        //
+        // searchControl.on("results", function(data) {
+        //     results.clearLayers();
+        //     for (let i = data.results.length - 1; i >= 0; i--) {
+        //         results.addLayer(L.marker(data.results[i].latlng));
+        //     }
+        // });
     }
 
+
     render() {
+        const center = [37.7833, -122.4167];
         return (
+            // <div>{searchControl}</div>
+
             <div className="container">
                 <div className="row">
                     <div className="col-md-6 mt-5 mx-auto">
@@ -206,6 +237,26 @@ class FormContent extends Component {
                                 {this.state.missing_title > 0 &&
                                 <span className='error'>Please insert title!</span>}
                             </div>
+                            {/*<div className="container" style={{ height: "50vh" ,*/}
+                            {/*    width: "50vh"}}>*/}
+                            {/*<div className="form-group">*/}
+                            {/*    <Map*/}
+                            {/*        style={{ height: "50vh" ,*/}
+                            {/*        width: "50vh"}}*/}
+                            {/*        zoom="10"*/}
+                            {/*        center={center}*/}
+                            {/*        ref={m => {*/}
+                            {/*            this.leafletMap = m;*/}
+                            {/*        }}*/}
+                            {/*    >*/}
+                            {/*        <TileLayer*/}
+                            {/*            attribution="&copy; <a href='https://osm.org/copyright'>OpenStreetMap</a> contributors"*/}
+                            {/*            url={"http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}*/}
+                            {/*        />*/}
+                            {/*        <div className="pointer" />*/}
+                            {/*    </Map>*/}
+                            {/*</div>*/}
+                            {/*</div>*/}
                             <div className="form-group">
                                 <label htmlFor="name">Country</label>
                                 <input

@@ -6,6 +6,7 @@ import Landing from './Component/Landing'
 import Login from './Component/Login'
 import Register from './Component/Register'
 import Profile from './Component/Profile'
+import MapComp from './Component/MapComp'
 import {Redirect} from "react-router-dom";
 
 
@@ -44,6 +45,10 @@ class App extends Component {
                     <Profile {...props} />) : (<Redirect to="/login"/> )
             )}/>
 
+            <Route exact path="/map/:id" render={(props) => (
+                isLoggedIn() ? (
+                    <MapComp {...props} />) : (<Redirect to="/login"/> )
+            )}/>
 
 
           </div>

@@ -45,6 +45,7 @@
     ]
   },
   "devDependencies": {
-    "@material-ui/icons": "^4.5.1"
+    "@material-ui/icons": "^4.5.1",
+    "esri-leaflet-geocoder": "^2.3.2"
   }
 }

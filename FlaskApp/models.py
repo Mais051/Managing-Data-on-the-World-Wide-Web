@@ -17,6 +17,14 @@ subscribers_table = db.Table('subscribers',
     db.Column('subscribe_date',db.DateTime, nullable=False, default=datetime.now())
 )
 
+notification_delete_table = db.Table('notification_delete',
+    db.Column('notification_id', db.Integer, db.ForeignKey('notification.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+)
+
+
+
+
 class Travel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, nullable=False)
@@ -29,7 +37,7 @@ class Travel(db.Model):
     latitude = db.Column(db.Integer, nullable=False)
     longitude = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    notifications=db.relationship('Notification',backref=db.backref('travel')) #maybe change it to post
+    notifications=db.relationship('Notification',backref=db.backref('travel'),cascade='all, delete-orphan') #maybe change it to post
 
 
     def __repr__(self):
@@ -57,6 +65,12 @@ class User(db.Model, UserMixin):
             "Travel",
             secondary=subscribers_table,
             backref=db.backref('subscribers'))
+
+    deletenotification = db.relationship(
+                    "Notification",
+                    secondary=notification_delete_table,
+                    backref=db.backref('notification_delete'))
+
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"

@@ -4,7 +4,7 @@ import secrets
 from PIL import Image
 from flask import url_for, request, abort, jsonify, make_response
 from FlaskApp import app, db, bcrypt, login_manager, geolocator
-from FlaskApp.models import User, Travel, Follow ,Notification,subscribers_table
+from FlaskApp.models import User, Travel, Follow ,Notification,subscribers_table,notification_delete_table
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
 from flask_cors import CORS, cross_origin
@@ -261,6 +261,8 @@ def get_posts(user_id):
         User.username,posts_following.c.title, posts_following.c.date_posted,posts_following.c.start_date,
         posts_following.c.end_date,posts_following.c.country,posts_following.c.city,posts_following.c.content
         ).filter(User.id==posts_following.c.user_id).all()
+
+
         posts = []
 
         for post in posts_following_username:
@@ -272,6 +274,7 @@ def get_posts(user_id):
             posts.append({'id':post.id,'username': 'You', 'title': post.title,'date_posted':post.date_posted,
                     'start_date':post.start_date,'end_date':post.end_date,'country':post.country,'city':post.city,
                     'content':post.content,'user_id':post.user_id})
+
 
         length = len(posts)
         return jsonify({'posts': posts, 'length': length})
@@ -316,27 +319,41 @@ def get_posts(user_id):
         return 'Updated'
     return 'Ok'
 
-@app.route('/noti/<int:user_id>', methods=['GET'])
+@app.route('/noti/<int:user_id>', methods=['GET','POST'])
 def getnoti(user_id):
-    posts_id_subscribed=db.session.query(subscribers_table.c.post_id,subscribers_table.c.subscribe_date).filter(subscribers_table.c.user_id==user_id).subquery()
-    posts_subscribed=db.session.query(Travel.title,Travel.user_id,posts_id_subscribed).filter(posts_id_subscribed.c.post_id==Travel.id).subquery()
-    post_subscribed_username=db.session.query(User.username,posts_subscribed).filter(User.id==posts_subscribed.c.user_id).subquery()
+    if request.method=='GET':
+        posts_id_subscribed=db.session.query(subscribers_table.c.post_id,subscribers_table.c.subscribe_date).filter(subscribers_table.c.user_id==user_id).subquery()
+        posts_subscribed=db.session.query(Travel.title,Travel.user_id,posts_id_subscribed).filter(posts_id_subscribed.c.post_id==Travel.id).subquery()
+        post_subscribed_username=db.session.query(User.username,posts_subscribed).filter(User.id==posts_subscribed.c.user_id).subquery()
 
-    notifications_subscribed=db.session.query(post_subscribed_username,Notification.notification_date).join((Notification,
-    post_subscribed_username.c.post_id==Notification.post_id)).subquery()
+        notifications_subscribed=db.session.query(post_subscribed_username,Notification.notification_date,Notification.id).join((Notification,
+        post_subscribed_username.c.post_id==Notification.post_id)).subquery()
 
-    notifications_al=db.session.query(notifications_subscribed.c.title,notifications_subscribed.c.username,
-    notifications_subscribed.c.post_id,notifications_subscribed.c.notification_date,notifications_subscribed.c.user_id
-    ).order_by(desc(notifications_subscribed.c.notification_date)).all()
+        #notification_without_deleted=db.session.query(notification_delete_table.c.id,)
 
-    notifications=[]
+        notifications_al=db.session.query(notifications_subscribed.c.title,notifications_subscribed.c.username,
+        notifications_subscribed.c.post_id,notifications_subscribed.c.notification_date,notifications_subscribed.c.user_id,
+        notifications_subscribed.c.id
+        ).order_by(desc(notifications_subscribed.c.notification_date)).all()
 
-    for notification in notifications_al:
-        notifications.append({'post_id':notification.post_id,
-        'username':notification.username,'title':notification.title,'notification_date':notification.notification_date,
-        'user_id':notification.user_id})
-    length = len(notifications)
-    return jsonify({'notifications': notifications, 'length': length})
+        notifications=[]
+
+        for notification in notifications_al:
+            notifications.append({'post_id':notification.post_id,
+            'username':notification.username,'title':notification.title,'notification_date':notification.notification_date,
+            'user_id':notification.user_id,'noti_id':notification.id})
+        length = len(notifications)
+        return jsonify({'notifications': notifications, 'length': length})
+
+    if request.method=="POST":
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        notification_id=data['noti_id']
+        notification=Notification.query.filter_by(id=notification_id).first()
+        user.deletenotification.append(notification)
+        db.session.add(user)
+        db.session.commit()
+    return 'OK'
 
 
 

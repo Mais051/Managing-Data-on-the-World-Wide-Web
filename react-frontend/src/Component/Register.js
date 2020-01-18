@@ -153,7 +153,7 @@ class Register extends Component {
     this.setState({invalid: 0});
     this.setState({user_taken: 0});
     this.setState({email_taken: 0});
-    console.log("onSubmit");
+
 
     const newUser = {
       username: this.state.username,
@@ -170,15 +170,18 @@ class Register extends Component {
       start_date: this.state.start_date,
       end_date: this.state.end_date
     };
+    console.log("the title:",this.state.title);
 
      if (validateForm(this.state.errors)) {
          if(this.state.username.length < 1 ||
              this.state.first_name.length < 1 ||
              this.state.last_name.length < 1 ||
              this.state.email.length < 1){
+             console.log("if (validateForm");
              this.setState({invalid: 1});
          }else{
              register(newUser).then(res => {
+                 console.log("res = ",res);
                  if (res == 'Created') {
                      this.props.history.push(`/login`)
                  }
@@ -190,19 +193,31 @@ class Register extends Component {
                      this.setState({email_taken: 1});
                      this.setState({invalid: 1});
                  }
-                 if (res == 'missing_city')
+                 if (res == 'missing_city') {
                      this.setState({missing_city: 1});
+                     this.setState({invalid: 1});
+                     console.log("if (missing_city");
+                 }
 
-                 if (res == 'missing_country')
-                     this.setState({missing_country: 1})
-                 if (res == 'missing_title')
-                     this.setState({missing_title: 1})
-                 if (res == 'invalid_date')
-                     this.setState({invalid_date: 1})
+                 if (res == 'missing_country') {
+                     this.setState({missing_country: 1});
+                     this.setState({invalid: 1});
+                     console.log("if (missing_country");
+                 }
+                 if (res == 'missing_title') {
+                     this.setState({missing_title: 1});
+                     this.setState({invalid: 1});
+                     console.log("if (missing_itle");
+                 }
+                 if (res == 'invalid_date') {
+                     this.setState({invalid_date: 1});
+                     this.setState({invalid: 1});
+                 }
              })
          }
      }
      else{
+         console.log('else');
          this.setState({invalid: 1});
      }
   }

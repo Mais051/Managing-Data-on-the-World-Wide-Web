@@ -11,7 +11,7 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
-import AirplanemodeActiveIcon from '@material-ui/icons/AirplanemodeActive';
+import DeleteSweepIcon from '@material-ui/icons/DeleteSweep';
 
 class Navbar extends Component {
 
@@ -138,13 +138,27 @@ class Navbar extends Component {
         this.setState({anchorEl:null});
 
   };
+    deleteNotification(notificationId){
+        console.log("noti id = ",notificationId);
+        axios.request({
+            method:'post',
+            url:'http://127.0.0.1:5000/noti/'+ this.state.current_user,
+            data: {noti_id: notificationId}
+        }).then(response => {
+            this.componentDidMount();
+        }).catch(err => console.log(err));
+  }
 
 
   render() {
       const NotificationItems =
           this.state.noti.map((noti, i) => {
           return(
-              <MenuItem ><AirplanemodeActiveIcon/>The post "{noti.title}"<br/>by {noti.username}<br/>was edited on {noti.notification_date}
+              <MenuItem >
+                  <IconButton onClick={() => this.deleteNotification(noti.noti_id)}>
+                        <DeleteSweepIcon/>
+                  </IconButton>
+                 The post "{noti.title}"<br/>by {noti.username}<br/>was edited on {noti.notification_date}
               </MenuItem>
 
           )
@@ -194,9 +208,14 @@ class Navbar extends Component {
       <ul className="navbar-nav">
         <li className="nav-item">
           <Link to={"/users/"+this.state.current_user} className="nav-link">
-            User
+              User
           </Link>
-        </li>
+      </li>
+          <li className="nav-item">
+              <Link to={"/map/"+this.state.current_user} className="nav-link">
+                  Map
+              </Link>
+          </li>
         <li className="nav-item">
             <IconButton aria-label="notification" aria-haspopup="true" onClick={this.handleClickNoti} >
                 <NotificationsActiveIcon />

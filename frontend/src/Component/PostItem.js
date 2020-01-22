@@ -58,6 +58,7 @@ class PostItem extends Component{
             subscribed :false,
             anchorEl: null,
             show: false
+
         }
     }
     subscribeToPost = (event) =>{
@@ -71,7 +72,7 @@ class PostItem extends Component{
             console.log("state: ",this.state.item.user_id);
             console.log("props: ",this.props.current_user);
             this.setState({
-                subscribed:!this.state.subscribed
+                subscribed:true
             })
 
         }).catch(err => {
@@ -95,8 +96,24 @@ class PostItem extends Component{
             .catch(err => console.log(err));
     }
 
+    is_subscribed(){
+        axios.defaults.withCredentials = true;
+        console.log("this.props.current_user",this.props.current_user);
+        console.log("this.state.item['id']",this.state.item['id']);
+        axios.get('http://127.0.0.1:5000/is_subscribed/' +  this.state.item['id']).then((response) => {
+            const res = ( response.data == 'True') ? true : false;
+            // this.setState({
+            //     subscribed: res
+            // })
+            this.state.subscribed=res;
+        }).catch(err => {
+            console.log(err)
+        });
+    }
+
     componentDidMount() {
         this.updatePost();
+
     }
 
     handleClick = event => {
@@ -135,6 +152,23 @@ class PostItem extends Component{
             this.componentDidMount();
         }
     };
+    unSubscribe(){
+        console.log("post item",this.state.item['id']);
+        axios.defaults.withCredentials = true;
+        axios.request({
+            method:'delete',
+            url:'http://127.0.0.1:5000/subscribe/'+ this.props.current_user,
+            data: {current_user: this.state.current_user,
+                post_id:this.state.item['id'],
+                subscribe_date:new Date()}
+        }).then(response => {
+            this.setState({
+                subscribed: false
+                //aboutFlag:0
+            });
+            //this.componentDidMount();
+        }).catch(err => console.log(err));
+    }
 
 
     render(){
@@ -191,13 +225,21 @@ class PostItem extends Component{
                 {this.state.item.content}
             </Typography>
             </CardContent>
-            <CardActions disableSpacing>
-                {this.props.current_user !== this.state.item.user_id &&
-                    <IconButton aria-label="add to favorites" onClick={this.subscribeToPost.bind(this)}
-                    >
+                {this.is_subscribed()}
+                <CardActions disableSpacing>
+                {((this.props.current_user !== this.state.item.user_id) && (!this.state.subscribed))&&
 
+                    <IconButton aria-label="add to favorites" onClick={this.state.subscribed ? this.unSubscribe.bind(this) : this.subscribeToPost.bind(this)}
+                    >
                         <FavoriteBorderIcon className={useStyles.secondary}/>
                     </IconButton>}
+                {((this.props.current_user !== this.state.item.user_id) && (this.state.subscribed))&&
+
+                <IconButton aria-label="add to favorites" onClick={this.state.subscribed ? this.unSubscribe.bind(this) : this.subscribeToPost.bind(this)}
+                >
+                    <FavoriteIcon className={useStyles.secondary}/>
+                </IconButton>}
+
             </CardActions>
             </Card>
             </div>

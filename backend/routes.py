@@ -3,8 +3,8 @@ import os
 import secrets
 from PIL import Image
 from flask import url_for, request, abort, jsonify, make_response
-from FlaskApp import app, db, bcrypt, login_manager, geolocator
-from FlaskApp.models import User, Travel, Follow ,Notification,subscribers_table,notification_delete_table
+from backend import app, db, bcrypt, login_manager, geolocator
+from backend.models import User, Travel, Follow ,Notification,subscribers_table,notification_delete_table
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_jwt_extended import (create_access_token)
 from flask_cors import CORS, cross_origin
@@ -409,6 +409,21 @@ def subscribe(user_id):
        # subpost.subscribe_date=data['subscribe_date']
         db.session.add(user)
         db.session.commit()
+        return 'SUBSCRIBED'
+
+    if request.method == 'DELETE':
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+        post_id=data['post_id']
+        post=Travel.query.filter_by(id=data['post_id']).first()
+        #s = db.session.query(subscribers_table).filter(subscribers_table.c.post_id==post.id).first()
+        #db.session.delete(s)
+        #db.session.commit()
+        #User.unsubscribe(user,post)
+        user.subposts.remove(post)
+        db.session.add(user)
+        db.session.commit()
+        return 'UNSUBSCRIBED'
 
         #if not post :
          #   'Post does not exist'
@@ -416,8 +431,22 @@ def subscribe(user_id):
         #if check_post:
         #   return 'Already subscribed'
         #else:
-        return 'Subscribed'
+
     return 'yes we can'
+
+
+
+
+@app.route('/is_subscribed/<int:post_id>', methods=['GET'])
+@login_required
+def is_subscribed(post_id):
+    #data = request.get_json()
+    #post_id=data['post_id']
+    subscribed_user=db.session.query(subscribers_table).filter(subscribers_table.c.user_id==current_user.id).subquery()
+    subscribed_user_post=db.session.query(subscribed_user).filter(subscribed_user.c.post_id==post_id).first()
+    if subscribed_user_post is not None:
+        return 'True'
+    return 'False'
 
 @app.route("/all_posts/<int:user_id>", methods=['GET'])
 def get_all_posts(user_id):

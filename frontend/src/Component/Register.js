@@ -255,6 +255,8 @@ class Register extends Component {
                           {this.state.invalid >0 &&  <Alert color="danger">
                               Your Post or your registration is invalid. Please try again!
                           </Alert> }
+                          <h1 className="h3 mb-3 font-weight-normal">Create a post</h1><br></br>
+
                           <label htmlFor="name">Title</label>
                           <input
                               type="text"
@@ -264,7 +266,7 @@ class Register extends Component {
                               value={this.state.title}
                               onChange={this.onChange}
                               noValidate
-                          />
+                          /><br></br>
                       </div>
                       <div className="form-group">
                           <label>Insert Address</label>
@@ -333,7 +335,7 @@ class Register extends Component {
       const registerForm =(
           <div className="container">
               <div className="row">
-                          <h1 className="h3 mb-3 font-weight-normal">Register</h1>
+                  <h1 className="h3 mb-3 font-weight-normal">Register</h1><br></br>
                           <div className="form-group">
                               {this.state.invalid >0 &&  <Alert color="danger">
                                   Your registration is invalid. Please try again!
@@ -352,7 +354,7 @@ class Register extends Component {
                               <span className='error'>{this.state.errors.username}</span>}
                               {this.state.user_taken > 0 &&
                               <span className='error'>This username is taken</span>}
-                          </div>
+                          </div><br></br>
                           <div className="form-group">
                               <label htmlFor="name">First name</label>
                               <input

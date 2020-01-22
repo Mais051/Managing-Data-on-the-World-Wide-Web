@@ -21,10 +21,10 @@ app.debug = True
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-geolocator = Nominatim(user_agent="FlaskApp")
+geolocator = Nominatim(user_agent="backend")
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
-from FlaskApp import routes
+from backend import routes

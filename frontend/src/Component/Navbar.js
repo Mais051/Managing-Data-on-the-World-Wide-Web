@@ -205,10 +205,11 @@ class Navbar extends Component {
     )
 
     const userLink = (
+        <div>
       <ul className="navbar-nav">
         <li className="nav-item">
           <Link to={"/users/"+this.state.current_user} className="nav-link">
-              User
+              Profile
           </Link>
       </li>
           <li className="nav-item">
@@ -258,13 +259,14 @@ class Navbar extends Component {
           </a>
         </li>
       </ul>
+        </div>
 
     )
     const notloggedin=(
           <div className="container">
               <div className="jumbotron mt-4">
                   <div className="col-sm-8 mx-auto">
-                      <h1 className="text-center">WELCOME</h1>
+                      <h1 className="text-center">EXPLORE</h1>
                   </div>
               </div>
           </div>
@@ -305,7 +307,7 @@ class Navbar extends Component {
           <ul className="navbar-nav">
             <li className="nav-item">
               <Link to="/" className="nav-link">
-                Home
+                Feed
               </Link>
             </li>
           </ul>

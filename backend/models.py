@@ -1,5 +1,5 @@
 from datetime import datetime
-from FlaskApp import db, login_manager
+from backend import db, login_manager
 from flask_login import UserMixin
 
 
@@ -65,16 +65,35 @@ class User(db.Model, UserMixin):
     subposts = db.relationship(
             "Travel",
             secondary=subscribers_table,
-            backref=db.backref('subscribers'))
+            backref=db.backref('subscribers',lazy='dynamic'))
 
     deletenotification = db.relationship(
                     "Notification",
                     secondary=notification_delete_table,
-                    backref=db.backref('notification_delete'))
+                    backref=db.backref('notification_delete',lazy='dynamic'))
 
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+
+    def is_subscribed(self, post):
+        if post.id is None:
+            return False
+
+        return db.session.query(self.subposts).filter(
+                post_id==post.id).first() is not None
+
+    def subscribe(self,post):
+        if not self.is_subscribed(post):
+            user.subposts.append(post)
+            db.session.commit()
+    def unsubscribe(self, post):
+        s = db.session.query(subscribers_table).filter(subscribers_table.c.post_id==post.id).first()
+        self.subposts.remove(s)
+        db.session.commit()
+        if s:
+            db.session.delete(s)
+            db.session.commit()
 
     def follow(self, user):
         if not self.is_following(user):
